@@ -1,0 +1,910 @@
+{% extends "layout.html" %}
+
+{% block title %}Health Profile | HealthAI{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <section class="profile-hero">
+        <div class="hero-left">
+            <div class="profile-avatar">{{ fullname[0]|upper if fullname else 'U' }}</div>
+            <div>
+                <span class="eyebrow">PHASE 10 · LONGITUDINAL HEALTH PROFILE</span>
+                <h1>{{ fullname }}</h1>
+                <p>{{ email }}</p>
+                <small>Personal assessment timeline and model-output history</small>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><a href="{{ url_for('heart_prediction') }}" class="hero-action">＋ Heart Assessment</a><a href="{{ url_for('diabetes_prediction') }}" class="hero-action">＋ Diabetes Assessment</a></div>
+    </section>
+
+    <section class="stat-grid">
+        <div class="stat-card"><span class="stat-icon">📊</span><div><small>Total Assessments</small><strong>{{ total_assessments }}</strong><span>Saved in your account</span></div></div>
+        <div class="stat-card"><span class="stat-icon">🔴</span><div><small>Higher-Risk Results</small><strong>{{ high_count }}</strong><span>Model classifications</span></div></div>
+        <div class="stat-card"><span class="stat-icon">🟢</span><div><small>Lower-Risk Results</small><strong>{{ low_count }}</strong><span>Model classifications</span></div></div>
+        <div class="stat-card"><span class="stat-icon">❤️</span><div><small>Average Heart High-Risk Probability</small><strong>{{ ('%.2f'|format(avg_high_probability)) ~ '%' if avg_high_probability is not none else '—' }}</strong><span>Heart Disease assessments</span></div></div>
+        <div class="stat-card"><span class="stat-icon">🩸</span><div><small>Average Diabetes High-Risk Probability</small><strong>{{ ('%.2f'|format(avg_diabetes_high_probability)) ~ '%' if avg_diabetes_high_probability is not none else '—' }}</strong><span>Diabetes assessments</span></div></div>
+    </section>
+
+    {% if latest %}
+    <section class="profile-card current-card">
+        <div class="section-heading"><div><span class="section-kicker">LATEST ASSESSMENT</span><h2>Current Health Snapshot</h2></div><a href="{{ url_for('prediction_detail', prediction_id=latest.id) }}">View full report →</a></div>
+        <div class="snapshot-grid">
+            <div class="snapshot-main">
+                <div class="snapshot-label">{{ latest.disease }}</div>
+                <div class="snapshot-result {% if 'High' in latest.prediction %}high{% else %}low{% endif %}">
+                    <span>{{ '🔴' if 'High' in latest.prediction else '🟢' }}</span>{{ latest.prediction }}
+                </div>
+                <p>Latest assessment recorded on <strong>{{ latest.date }}</strong> at {{ latest.time }}.</p>
+            </div>
+            <div class="snapshot-metric"><small>High-Risk Probability</small><strong>{{ '%.2f'|format(latest.high_risk_probability) }}%</strong><div class="meter"><span style="width:{{ latest.high_risk_probability }}%"></span></div></div>
+            {% if previous %}
+            <div class="snapshot-metric"><small>Change vs Previous</small><strong class="{% if latest_change is not none and latest_change > 0 %}change-up{% elif latest_change is not none and latest_change < 0 %}change-down{% endif %}">{{ '%+.2f'|format(latest_change) if latest_change is not none else '—' }} pp</strong><span class="muted">High-risk probability</span></div>
+            {% endif %}
+        </div>
+        <div class="metric-note">This is a model-derived probability for the HeartDisease=1 class. It is not a clinically validated risk score or diagnosis.</div>
+    </section>
+    {% endif %}
+
+    {% if chart_labels %}
+    <section class="profile-card">
+        <div class="section-heading"><div><span class="section-kicker">LONGITUDINAL VIEW</span><h2>Heart Disease Risk History</h2><p>Consistent high-risk class probability across saved heart assessments.</p></div><span class="pill">{{ chart_labels|length }} plotted</span></div>
+        <div class="chart-wrap"><canvas id="profileRiskChart"></canvas></div>
+        <div class="research-note"><strong>Research interpretation:</strong> The chart tracks the model's probability for the high-risk class consistently, including assessments where the model predicted the low-risk class.</div>
+    </section>
+    {% endif %}
+
+    <!-- =========================================================
+         SEPARATE DISEASE ANALYTICS
+         ========================================================= -->
+    <section class="profile-card disease-analytics-card">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">SEPARATE DISEASE ANALYTICS</span>
+                <h2>Heart Disease &amp; Diabetes</h2>
+                <p>Each disease is displayed independently because the models use different inputs and prediction systems.</p>
+            </div>
+        </div>
+
+        <div class="disease-analytics-grid">
+            <!-- HEART -->
+            <div class="disease-panel heart-panel">
+                <div class="disease-panel-header">
+                    <div class="disease-panel-title">
+                        <div class="disease-big-icon">❤️</div>
+                        <div>
+                            <span class="panel-kicker">HEART DISEASE</span>
+                            <h3>Heart Prediction Analytics</h3>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('heart_prediction') }}" class="panel-action">＋ New Assessment</a>
+                </div>
+
+                <div class="mini-stat-grid">
+                    <div class="mini-stat"><span>Assessments</span><strong>{{ heart_count }}</strong></div>
+                    <div class="mini-stat"><span>Higher-risk</span><strong>{{ heart_high_count }}</strong></div>
+                    <div class="mini-stat"><span>Avg high-risk probability</span><strong>{{ ('%.2f'|format(avg_high_probability)) ~ '%' if avg_high_probability is not none else '—' }}</strong></div>
+                </div>
+
+                {% if heart_rows %}
+                <div class="disease-latest">
+                    <div>
+                        <small>Latest result</small>
+                        <strong class="{% if 'high' in heart_latest.prediction|lower %}risk-high{% else %}risk-low{% endif %}">
+                            {{ '🔴' if 'high' in heart_latest.prediction|lower else '🟢' }} {{ heart_latest.prediction }}
+                        </strong>
+                    </div>
+                    <div>
+                        <small>High-risk probability</small>
+                        <strong>{{ '%.2f'|format(heart_latest.high_risk_probability) }}%</strong>
+                    </div>
+                    <div>
+                        <small>Assessment</small>
+                        <strong>{{ heart_latest.date }}</strong>
+                        <span>{{ heart_latest.time }}</span>
+                    </div>
+                </div>
+
+                <div class="chart-title-row">
+                    <strong>Heart high-risk probability trend</strong>
+                    <span>Last {{ heart_chart_labels|length }} assessments</span>
+                </div>
+                <div class="disease-chart-wrap">
+                    <canvas id="heartRiskChart"></canvas>
+                </div>
+
+                <div class="recent-data-title">Recent Heart assessments</div>
+                <div class="recent-data-table">
+                    <div class="data-row data-head"><span>Date</span><span>Prediction</span><span>High-risk probability</span></div>
+                    {% for item in heart_recent_rows %}
+                    <div class="data-row">
+                        <span>{{ item.date }}<small>{{ item.time }}</small></span>
+                        <span class="{% if 'high' in item.prediction|lower %}risk-high{% else %}risk-low{% endif %}">{{ item.prediction }}</span>
+                        <span><strong>{{ '%.2f'|format(item.high_risk_probability) }}%</strong></span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('history') }}" class="view-history-link">View full Heart history →</a>
+                {% else %}
+                <div class="disease-empty">No Heart Disease assessments have been saved yet.</div>
+                {% endif %}
+            </div>
+
+            <!-- DIABETES -->
+            <div class="disease-panel diabetes-panel">
+                <div class="disease-panel-header">
+                    <div class="disease-panel-title">
+                        <div class="disease-big-icon">🩸</div>
+                        <div>
+                            <span class="panel-kicker">DIABETES</span>
+                            <h3>Diabetes Prediction Analytics</h3>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('diabetes_prediction') }}" class="panel-action">＋ New Assessment</a>
+                </div>
+
+                <div class="mini-stat-grid">
+                    <div class="mini-stat"><span>Assessments</span><strong>{{ diabetes_count }}</strong></div>
+                    <div class="mini-stat"><span>Higher-risk</span><strong>{{ diabetes_high_count }}</strong></div>
+                    <div class="mini-stat"><span>Avg high-risk probability</span><strong>{{ ('%.2f'|format(avg_diabetes_high_probability)) ~ '%' if avg_diabetes_high_probability is not none else '—' }}</strong></div>
+                </div>
+
+                {% if diabetes_rows %}
+                <div class="disease-latest">
+                    <div>
+                        <small>Latest result</small>
+                        <strong class="{% if 'high' in diabetes_latest.prediction|lower %}risk-high{% else %}risk-low{% endif %}">
+                            {{ '🔴' if 'high' in diabetes_latest.prediction|lower else '🟢' }} {{ diabetes_latest.prediction }}
+                        </strong>
+                    </div>
+                    <div>
+                        <small>High-risk probability</small>
+                        <strong>{{ '%.2f'|format(diabetes_latest.high_risk_probability) }}%</strong>
+                    </div>
+                    <div>
+                        <small>Assessment</small>
+                        <strong>{{ diabetes_latest.date }}</strong>
+                        <span>{{ diabetes_latest.time }}</span>
+                    </div>
+                </div>
+
+                <div class="chart-title-row">
+                    <strong>Diabetes high-risk probability trend</strong>
+                    <span>Last {{ diabetes_chart_labels|length }} assessments</span>
+                </div>
+                <div class="disease-chart-wrap">
+                    <canvas id="diabetesRiskChart"></canvas>
+                </div>
+
+                <div class="recent-data-title">Recent Diabetes assessments</div>
+                <div class="recent-data-table">
+                    <div class="data-row data-head"><span>Date</span><span>Prediction</span><span>High-risk probability</span></div>
+                    {% for item in diabetes_recent_rows %}
+                    <div class="data-row">
+                        <span>{{ item.date }}<small>{{ item.time }}</small></span>
+                        <span class="{% if 'high' in item.prediction|lower %}risk-high{% else %}risk-low{% endif %}">{{ item.prediction }}</span>
+                        <span><strong>{{ '%.2f'|format(item.high_risk_probability) }}%</strong></span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('history') }}" class="view-history-link">View full Diabetes history →</a>
+                {% else %}
+                <div class="disease-empty">No Diabetes assessments have been saved yet.</div>
+                {% endif %}
+            </div>
+
+            <!-- EARLY DIABETES -->
+            <div class="disease-panel early-diabetes-panel">
+                <div class="disease-panel-header">
+                    <div class="disease-panel-title">
+                        <div class="disease-big-icon">🔎</div>
+                        <div><span class="panel-kicker">EARLY DIABETES</span><h3>Early Diabetes Prediction Analytics</h3></div>
+                    </div>
+                    <a href="{{ url_for('early_diabetes_prediction') }}" class="panel-action">＋ New Assessment</a>
+                </div>
+                <div class="mini-stat-grid">
+                    <div class="mini-stat"><span>Assessments</span><strong>{{ early_diabetes_count }}</strong></div>
+                    <div class="mini-stat"><span>Higher-risk</span><strong>{{ early_diabetes_high_count }}</strong></div>
+                    <div class="mini-stat"><span>Avg high-risk probability</span><strong>{{ ('%.2f'|format(avg_early_diabetes_high_probability)) ~ '%' if avg_early_diabetes_high_probability is not none else '—' }}</strong></div>
+                </div>
+                {% if early_diabetes_rows %}
+                <div class="disease-latest">
+                    <div><small>Latest result</small><strong class="{% if 'high' in early_diabetes_latest.prediction|lower %}risk-high{% else %}risk-low{% endif %}">{{ '🔴' if 'high' in early_diabetes_latest.prediction|lower else '🟢' }} {{ early_diabetes_latest.prediction }}</strong></div>
+                    <div><small>High-risk probability</small><strong>{{ '%.2f'|format(early_diabetes_latest.high_risk_probability) }}%</strong></div>
+                    <div><small>Assessment</small><strong>{{ early_diabetes_latest.date }}</strong><span>{{ early_diabetes_latest.time }}</span></div>
+                </div>
+                <div class="chart-title-row"><strong>Early Diabetes high-risk probability trend</strong><span>Last {{ early_diabetes_chart_labels|length }} assessments</span></div>
+                <div class="disease-chart-wrap"><canvas id="earlyDiabetesRiskChart"></canvas></div>
+                <div class="recent-data-title">Recent Early Diabetes assessments</div>
+                <div class="recent-data-table"><div class="data-row data-head"><span>Date</span><span>Prediction</span><span>High-risk probability</span></div>{% for item in early_diabetes_recent_rows %}<div class="data-row"><span>{{ item.date }}<small>{{ item.time }}</small></span><span class="{% if 'high' in item.prediction|lower %}risk-high{% else %}risk-low{% endif %}">{{ item.prediction }}</span><span><strong>{{ '%.2f'|format(item.high_risk_probability) }}%</strong></span></div>{% endfor %}</div>
+                <a href="{{ url_for('history') }}" class="view-history-link">View full prediction history →</a>
+                {% else %}<div class="disease-empty">No Early Diabetes assessments have been saved yet.</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="metric-note"><strong>Research note:</strong> Heart Disease, Diabetes, and Early Diabetes probabilities are shown separately. They are outputs from different disease models and should not be added, averaged, or interpreted as a combined clinical risk score. They are outputs from different disease models and should not be added, averaged, or interpreted as a combined clinical risk score.</div>
+    </section>
+
+    {% if comparison %}
+    <section class="profile-card">
+        <div class="section-heading"><div><span class="section-kicker">ASSESSMENT COMPARISON</span><h2>Previous vs Current</h2><p>Descriptive comparison of the final values submitted to the model.</p></div><span class="pill">{{ previous.date }} → {{ latest.date }}</span></div>
+        <div class="comparison-grid">
+            {% for item in comparison %}
+            <div class="compare-item {{ item.status }}">
+                <div class="compare-top"><strong>{{ item.label }}</strong><span>{{ item.status|title }}</span></div>
+                <div class="compare-values"><div><small>Previous</small><b>{{ item.old if item.old not in [None, ''] else '—' }}{% if item.unit %} {{ item.unit }}{% endif %}</b></div><div class="arrow">→</div><div><small>Current</small><b>{{ item.new if item.new not in [None, ''] else '—' }}{% if item.unit %} {{ item.unit }}{% endif %}</b></div></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="metric-note">Changes describe differences between submitted assessment values. They do not establish clinical improvement, deterioration, or causation.</div>
+    </section>
+    {% endif %}
+
+    <section class="profile-card">
+        <div class="section-heading"><div><span class="section-kicker">DISEASE OVERVIEW</span><h2>Assessment Summary</h2><p>Counts are based on your saved prediction records.</p></div></div>
+        <div class="disease-grid">
+            {% for name, bucket in disease_summary.items() %}
+            <div class="disease-summary"><div class="disease-symbol">{% if 'heart' in name|lower %}❤️{% else %}🧬{% endif %}</div><div><strong>{{ name }}</strong><span>{{ bucket.total }} assessment{{ '' if bucket.total == 1 else 's' }}</span><span>{{ bucket.high }} higher-risk classification{{ '' if bucket.high == 1 else 's' }}</span></div></div>
+            {% endfor %}
+            {% if not disease_summary %}<div class="empty-profile"><div>📋</div><h3>No assessments yet</h3><p>Complete your first assessment to start building your longitudinal profile.</p><a href="{{ url_for('heart_prediction') }}">Start Assessment</a></div>{% endif %}
+        </div>
+    </section>
+
+    <!-- =========================================================
+     COMPACT ASSESSMENT TIMELINE
+========================================================== -->
+
+<section class="profile-card timeline-card compact-timeline-card">
+
+    <div class="section-heading">
+
+        <div>
+            <span class="section-kicker">
+                ASSESSMENT TIMELINE
+            </span>
+
+            <h2>
+                Recent Assessments
+            </h2>
+
+            <p>
+                Your latest model-based health assessments.
+            </p>
+        </div>
+
+        <div class="timeline-header-right">
+
+            <span class="timeline-count">
+                {{ timeline|length }} Total
+            </span>
+
+            <a href="{{ url_for('history') }}">
+                View full history →
+            </a>
+
+        </div>
+
+    </div>
+
+
+    {% if timeline %}
+
+    <!-- Recent assessment list -->
+
+    <div class="compact-timeline">
+
+        {% for item in timeline[:5] %}
+
+        <div class="compact-timeline-row">
+
+            <!-- Date -->
+
+            <div class="compact-date">
+
+                <strong>
+                    {{ item.date }}
+                </strong>
+
+                <span>
+                    {{ item.time }}
+                </span>
+
+            </div>
+
+
+            <!-- Disease icon -->
+
+            <div class="compact-disease-icon">
+
+                {% if 'heart' in item.disease|lower %}
+
+                    ❤️
+
+                {% elif 'early' in item.disease|lower %}
+
+                    🔎
+
+                {% elif 'diabetes' in item.disease|lower %}
+
+                    🩸
+
+                {% else %}
+
+                    🧬
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- Assessment information -->
+
+            <div class="compact-assessment">
+
+                <div class="compact-title">
+
+                    <strong>
+                        {{ item.disease }}
+                    </strong>
+
+                    <span
+                        class="mini-badge
+                        {% if 'high' in item.prediction|lower %}
+                            high
+                        {% else %}
+                            low
+                        {% endif %}">
+
+                        {% if 'high' in item.prediction|lower %}
+                            🔴 High Risk
+                        {% else %}
+                            🟢 Low Risk
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+                <span class="compact-probability">
+
+                    High-risk probability:
+
+                    <strong>
+                        {{ '%.2f'|format(item.high_risk_probability) }}%
+                    </strong>
+
+                </span>
+
+            </div>
+
+
+            <!-- Probability -->
+
+            <div class="compact-probability-box">
+
+                <strong>
+                    {{ '%.2f'|format(item.high_risk_probability) }}%
+                </strong>
+
+                <span>
+                    High-risk
+                </span>
+
+            </div>
+
+
+            <!-- Report -->
+
+            <a
+                class="compact-report-btn"
+                href="{{ url_for('prediction_detail', prediction_id=item.id) }}">
+
+                View Report
+                <span>→</span>
+
+            </a>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- More records -->
+
+    {% if timeline|length > 5 %}
+
+    <div class="timeline-more">
+
+        <span>
+            Showing the latest <strong>5</strong>
+            of <strong>{{ timeline|length }}</strong>
+            assessments
+        </span>
+
+        <a href="{{ url_for('history') }}">
+            View {{ timeline|length - 5 }} more →
+        </a>
+
+    </div>
+
+    {% endif %}
+
+
+    {% else %}
+
+    <div class="empty-profile">
+
+        <div>📋</div>
+
+        <h3>
+            Your timeline is empty
+        </h3>
+
+        <p>
+            Complete an assessment to begin tracking
+            model outputs over time.
+        </p>
+
+        <a href="{{ url_for('heart_prediction') }}">
+            Start Assessment
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+    <div class="profile-disclaimer"><strong>⚠ Health Information Notice</strong><p>This profile organizes machine-learning assessment outputs and submitted data for educational and research purposes. It is not a medical record, diagnosis, or substitute for professional medical evaluation.</p></div>
+</div>
+
+<style>
+.profile-page{max-width:1200px;margin:0 auto;padding:34px 22px 65px;color:#18344d}.profile-hero{background:linear-gradient(135deg,#0d3b68,#1769aa);border-radius:24px;padding:28px 32px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:20px;box-shadow:0 14px 38px rgba(11,49,91,.15);margin-bottom:22px}.hero-left{display:flex;align-items:center;gap:18px}.profile-avatar{width:68px;height:68px;border-radius:20px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:800}.eyebrow,.section-kicker{font-size:11px;font-weight:800;letter-spacing:1.4px}.profile-hero h1{font-size:28px;margin:5px 0 2px}.profile-hero p{margin:0;opacity:.86;font-size:13px}.profile-hero small{opacity:.7}.hero-action{color:#0d477d;background:#fff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:700;white-space:nowrap}.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:22px}.stat-card{background:#fff;border:1px solid #e3edf6;border-radius:17px;padding:18px;display:flex;align-items:center;gap:13px;box-shadow:0 5px 20px rgba(20,70,110,.05)}.stat-icon{width:43px;height:43px;border-radius:13px;background:#edf6ff;display:flex;align-items:center;justify-content:center;font-size:20px}.stat-card small,.stat-card span{display:block;color:#718397}.stat-card small{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}.stat-card strong{display:block;font-size:24px;color:#12304a;margin:2px 0}.stat-card span{font-size:10px}.profile-card{background:#fff;border:1px solid #e3edf6;border-radius:20px;margin-bottom:22px;padding:24px;box-shadow:0 5px 22px rgba(20,70,110,.05)}.section-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:20px}.section-heading h2{margin:5px 0 3px;font-size:21px;color:#102f49}.section-heading p{margin:0;color:#738398;font-size:12px}.section-heading a{color:#1769aa;text-decoration:none;font-size:12px;font-weight:700}.section-kicker{color:#1769aa}.pill{padding:7px 11px;background:#edf6ff;color:#1769aa;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}.snapshot-grid{display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:18px;align-items:stretch}.snapshot-main,.snapshot-metric{border:1px solid #e5edf4;border-radius:15px;padding:18px;background:#fbfdff}.snapshot-label{font-size:11px;text-transform:uppercase;color:#7a8a9b;font-weight:800}.snapshot-result{font-size:21px;font-weight:800;margin:9px 0}.snapshot-result.high{color:#c0392b}.snapshot-result.low{color:#187443}.snapshot-main p,.muted{font-size:12px;color:#748499;margin:0}.snapshot-metric small{display:block;color:#718397;font-size:11px;font-weight:700}.snapshot-metric strong{display:block;font-size:28px;color:#12304a;margin:8px 0}.meter{height:7px;background:#e7eef5;border-radius:10px;overflow:hidden}.meter span{display:block;height:100%;background:#1769aa;border-radius:10px}.change-up{color:#c0392b!important}.change-down{color:#187443!important}.metric-note,.research-note{margin-top:15px;background:#f4f8fc;border-radius:11px;padding:12px 14px;color:#64758a;font-size:11px;line-height:1.55}.chart-wrap{height:310px}.comparison-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.compare-item{border:1px solid #e5edf4;border-radius:14px;padding:14px;background:#fcfdff}.compare-item.changed{border-left:4px solid #1769aa}.compare-item.unchanged{opacity:.72}.compare-top{display:flex;justify-content:space-between;gap:10px}.compare-top strong{font-size:12px}.compare-top span{font-size:9px;text-transform:uppercase;font-weight:800;color:#75869a}.compare-values{display:grid;grid-template-columns:1fr 25px 1fr;align-items:center;margin-top:12px}.compare-values small{display:block;color:#8493a3;font-size:10px}.compare-values b{font-size:12px;color:#17344e}.arrow{text-align:center;color:#1769aa;font-weight:800}.disease-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.disease-summary{border:1px solid #e4edf5;border-radius:14px;padding:16px;display:flex;gap:13px;align-items:center}.disease-symbol{width:43px;height:43px;border-radius:12px;background:#edf6ff;display:flex;align-items:center;justify-content:center}.disease-summary strong,.disease-summary span{display:block}.disease-summary strong{font-size:13px}.disease-summary span{font-size:10px;color:#78899b;margin-top:3px}
+/* =========================================================
+   COMPACT ASSESSMENT TIMELINE
+========================================================= */
+
+.compact-timeline-card {
+    padding-bottom: 0;
+}
+
+
+.timeline-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+.timeline-header-right a {
+    color: #1769aa;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+.timeline-header-right a:hover {
+    text-decoration: underline;
+}
+
+
+.timeline-count {
+    background: #edf6ff;
+    color: #1769aa;
+    padding: 7px 11px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+/* Main list */
+
+.compact-timeline {
+    border-top: 1px solid #e8eef4;
+}
+
+
+/* Individual assessment */
+
+.compact-timeline-row {
+    display: grid;
+
+    grid-template-columns:
+        105px
+        42px
+        minmax(180px, 1fr)
+        110px
+        105px;
+
+    align-items: center;
+
+    gap: 14px;
+
+    min-height: 68px;
+
+    padding: 10px 4px;
+
+    border-bottom: 1px solid #edf2f6;
+
+    transition:
+        background .18s ease,
+        transform .18s ease;
+}
+
+
+.compact-timeline-row:hover {
+    background: #f8fbfe;
+
+    transform: translateX(2px);
+}
+
+
+/* Date */
+
+.compact-date {
+    padding-left: 4px;
+}
+
+
+.compact-date strong {
+    display: block;
+
+    color: #17344e;
+
+    font-size: 11px;
+
+    font-weight: 800;
+}
+
+
+.compact-date span {
+    display: block;
+
+    color: #8a99a8;
+
+    font-size: 9px;
+
+    margin-top: 3px;
+}
+
+
+/* Disease icon */
+
+.compact-disease-icon {
+    width: 36px;
+    height: 36px;
+
+    border-radius: 10px;
+
+    background: #edf6ff;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 16px;
+}
+
+
+/* Assessment */
+
+.compact-assessment {
+    min-width: 0;
+}
+
+
+.compact-title {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 4px;
+}
+
+
+.compact-title strong {
+    color: #17344e;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+.compact-probability {
+    color: #8795a3;
+
+    font-size: 9px;
+}
+
+
+.compact-probability strong {
+    color: #1769aa;
+}
+
+
+/* Risk badge */
+
+.compact-title .mini-badge {
+    flex-shrink: 0;
+}
+
+
+/* Probability */
+
+.compact-probability-box {
+    text-align: right;
+}
+
+
+.compact-probability-box strong {
+    display: block;
+
+    color: #17344e;
+
+    font-size: 13px;
+}
+
+
+.compact-probability-box span {
+    display: block;
+
+    color: #8a98a6;
+
+    font-size: 8px;
+
+    margin-top: 2px;
+}
+
+
+/* Report */
+
+.compact-report-btn {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+    border: 1px solid #c8dceb;
+
+    color: #1769aa;
+
+    background: #fff;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+
+    padding: 7px 9px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    transition: all .18s ease;
+}
+
+
+.compact-report-btn:hover {
+    background: #edf6ff;
+
+    border-color: #1769aa;
+
+    color: #12588f;
+}
+
+
+.compact-report-btn span {
+    font-size: 11px;
+}
+
+
+/* More records */
+
+.timeline-more {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 13px 4px 15px;
+
+    color: #7d8d9d;
+
+    font-size: 10px;
+}
+
+
+.timeline-more strong {
+    color: #17344e;
+}
+
+
+.timeline-more a {
+    color: #1769aa;
+
+    text-decoration: none;
+
+    font-weight: 800;
+}
+
+
+.timeline-more a:hover {
+    text-decoration: underline;
+}
+.mini-badge{font-size:9px;padding:4px 7px;border-radius:10px;font-weight:800}.mini-badge.high{background:#fff0f0;color:#c0392b}.mini-badge.low{background:#eaf8ef;color:#187443}.timeline-btn{border:1px solid #1769aa;color:#1769aa;text-decoration:none;padding:8px 11px;border-radius:9px;font-size:10px;font-weight:700}.empty-profile{text-align:center;padding:35px;color:#718397}.empty-profile>div{font-size:30px}.empty-profile h3{color:#17344e;font-size:17px}.empty-profile p{font-size:12px}.empty-profile a{display:inline-block;background:#1769aa;color:#fff;text-decoration:none;padding:10px 15px;border-radius:9px;font-size:11px;font-weight:700}.profile-disclaimer{background:#fff8ed;border:1px solid #f3dfbb;border-radius:15px;padding:15px 18px;color:#7b6542;font-size:11px;line-height:1.55}.profile-disclaimer strong{display:block;margin-bottom:4px;color:#765d34}
+
+.disease-analytics-card{overflow:hidden}.disease-analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.disease-panel{border:1px solid #e2ebf4;border-radius:18px;padding:18px;background:#fbfdff;min-width:0}.heart-panel{border-top:4px solid #1769aa}.diabetes-panel{border-top:4px solid #2c8f67}.early-diabetes-panel{border-top:4px solid #7b61a8}.disease-panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}.disease-panel-title{display:flex;gap:11px;align-items:center}.disease-big-icon{width:44px;height:44px;border-radius:13px;background:#edf6ff;display:flex;align-items:center;justify-content:center;font-size:21px}.panel-kicker{font-size:9px;letter-spacing:1.2px;font-weight:800;color:#1769aa}.disease-panel h3{margin:3px 0 0;color:#15344d;font-size:17px}.panel-action{font-size:10px;font-weight:700;text-decoration:none;color:#1769aa;border:1px solid #bcd5e9;border-radius:9px;padding:8px 10px;white-space:nowrap}.mini-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.mini-stat{background:#fff;border:1px solid #e4edf5;border-radius:11px;padding:10px}.mini-stat span{display:block;font-size:9px;color:#7c8c9d;line-height:1.3}.mini-stat strong{display:block;font-size:17px;color:#17344e;margin-top:3px}.disease-latest{display:grid;grid-template-columns:1.35fr .9fr .9fr;gap:9px;margin:10px 0}.disease-latest>div{background:#fff;border:1px solid #e4edf5;border-radius:11px;padding:10px}.disease-latest small{display:block;color:#7c8c9d;font-size:9px;margin-bottom:4px}.disease-latest strong{display:block;font-size:12px;color:#17344e}.disease-latest span{display:block;color:#8391a1;font-size:9px;margin-top:3px}.risk-high{color:#c0392b!important}.risk-low{color:#187443!important}.chart-title-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:15px 0 7px}.chart-title-row strong{font-size:11px;color:#17344e}.chart-title-row span{font-size:9px;color:#8190a0}.disease-chart-wrap{height:230px;background:#fff;border:1px solid #e4edf5;border-radius:12px;padding:8px}.recent-data-title{font-size:11px;font-weight:800;color:#17344e;margin:16px 0 7px}.recent-data-table{background:#fff;border:1px solid #e4edf5;border-radius:11px;overflow:hidden}.data-row{display:grid;grid-template-columns:1fr 1.2fr .9fr;gap:8px;padding:9px 10px;border-bottom:1px solid #edf2f6;align-items:center;font-size:9px;color:#617489}.data-row:last-child{border-bottom:0}.data-row span small{display:block;color:#8a98a7;font-size:8px;margin-top:2px}.data-row strong{color:#17344e}.data-head{background:#f5f9fc;text-transform:uppercase;font-weight:800;font-size:8px;color:#7b8b9b}.view-history-link{display:inline-block;margin-top:10px;color:#1769aa;text-decoration:none;font-size:10px;font-weight:700}.disease-empty{padding:30px 10px;text-align:center;color:#7b8b9c;font-size:11px;background:#fff;border:1px dashed #d7e3ed;border-radius:11px}
+
+@media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr)}.snapshot-grid{grid-template-columns:1fr}.comparison-grid,.disease-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.profile-page{padding:20px 13px 45px}.profile-hero{padding:21px;align-items:flex-start;flex-direction:column}.hero-left{align-items:flex-start}.profile-avatar{width:55px;height:55px}.profile-hero h1{font-size:22px}.hero-action{width:100%;text-align:center}.stat-grid{grid-template-columns:1fr 1fr;gap:10px}.stat-card{padding:13px}.stat-card strong{font-size:20px}.section-heading{flex-direction:column}.timeline-row{grid-template-columns:1fr;gap:6px}.timeline-btn{width:max-content}.chart-wrap{height:250px}.comparison-grid{grid-template-columns:1fr}}
+@media (max-width: 850px) {
+
+    .compact-timeline-row {
+
+        grid-template-columns:
+            75px
+            38px
+            1fr
+            85px;
+
+        gap: 10px;
+
+    }
+
+    .compact-report-btn {
+
+        grid-column: 3 / 5;
+
+        width: max-content;
+
+    }
+
+    .compact-probability-box {
+        display: none;
+    }
+
+}
+@media (max-width: 550px) {
+
+    .timeline-header-right {
+        width: 100%;
+
+        justify-content: space-between;
+    }
+
+
+    .compact-timeline-row {
+
+        grid-template-columns:
+            55px
+            36px
+            1fr;
+
+        gap: 8px;
+
+        padding: 12px 2px;
+
+    }
+
+
+    .compact-date strong {
+        font-size: 9px;
+    }
+
+
+    .compact-date span {
+        font-size: 8px;
+    }
+
+
+    .compact-title {
+        flex-wrap: wrap;
+    }
+
+
+    .compact-title strong {
+        font-size: 11px;
+
+        max-width: 120px;
+    }
+
+
+    .compact-probability-box {
+        display: none;
+    }
+
+
+    .compact-report-btn {
+        grid-column: 3;
+
+        justify-self: start;
+
+        padding: 6px 8px;
+
+        font-size: 8px;
+    }
+
+
+    .compact-probability {
+        display: none;
+    }
+
+
+    .timeline-more {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 7px;
+    }
+
+}
+</style>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const canvas=document.getElementById('profileRiskChart');
+    if(!canvas) return;
+    const labels={{ chart_labels|tojson }};
+    const values={{ chart_values|tojson }};
+    const predictions={{ chart_predictions|tojson }};
+    new Chart(canvas,{type:'line',data:{labels:labels,datasets:[{label:'High-risk probability (%)',data:values,tension:.28,fill:false,borderWidth:2,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:100,title:{display:true,text:'High-risk probability (%)'}},x:{title:{display:true,text:'Assessment date'}}},plugins:{legend:{display:true},tooltip:{callbacks:{label:function(c){return ' High-risk probability: '+c.parsed.y.toFixed(2)+'% · '+(predictions[c.dataIndex]||'');}}}}}});
+});
+</script>
+
+{% if heart_chart_labels %}
+<script>
+(function(){
+ const c=document.getElementById('heartRiskChart'); if(!c) return;
+ const labels={{ heart_chart_labels|tojson }};
+ const values={{ heart_chart_values|tojson }};
+ const predictions={{ heart_chart_predictions|tojson }};
+ new Chart(c,{type:'line',data:{labels:labels,datasets:[{label:'Heart high-risk probability (%)',data:values,tension:.25,fill:false,borderWidth:2,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:100,title:{display:true,text:'High-risk probability (%)'}},x:{title:{display:true,text:'Assessment date'}}},plugins:{legend:{display:true},tooltip:{callbacks:{label:function(c){return ' High-risk probability: '+c.parsed.y.toFixed(2)+'% · '+(predictions[c.dataIndex]||'');}}}}}});
+})();
+</script>
+{% endif %}
+
+{% if diabetes_chart_labels %}
+<script>
+(function(){
+ const c=document.getElementById('diabetesRiskChart'); if(!c) return;
+ const labels={{ diabetes_chart_labels|tojson }};
+ const values={{ diabetes_chart_values|tojson }};
+ const predictions={{ diabetes_chart_predictions|tojson }};
+ new Chart(c,{type:'line',data:{labels:labels,datasets:[{label:'Diabetes high-risk probability (%)',data:values,tension:.25,fill:false,borderWidth:2,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:100,title:{display:true,text:'High-risk probability (%)'}},x:{title:{display:true,text:'Assessment date'}}},plugins:{legend:{display:true},tooltip:{callbacks:{label:function(c){return ' High-risk probability: '+c.parsed.y.toFixed(2)+'% · '+(predictions[c.dataIndex]||'');}}}}}});
+})();
+</script>
+{% endif %}
+
+{% if early_diabetes_chart_labels %}
+<script>
+(function(){
+ const c=document.getElementById('earlyDiabetesRiskChart'); if(!c) return;
+ const labels={{ early_diabetes_chart_labels|tojson }}; const values={{ early_diabetes_chart_values|tojson }}; const predictions={{ early_diabetes_chart_predictions|tojson }};
+ new Chart(c,{type:'line',data:{labels:labels,datasets:[{label:'Early Diabetes high-risk probability (%)',data:values,tension:.25,fill:false,borderWidth:2,pointRadius:4,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:100,title:{display:true,text:'High-risk probability (%)'}},x:{title:{display:true,text:'Assessment date'}}},plugins:{legend:{display:true},tooltip:{callbacks:{label:function(c){return ' High-risk probability: '+c.parsed.y.toFixed(2)+'% · '+(predictions[c.dataIndex]||'');}}}}}});
+})();
+</script>
+{% endif %}
+
+{% endblock %}
+{% endblock %}

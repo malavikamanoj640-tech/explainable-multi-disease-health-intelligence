@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block title %}Phase 8 Research Evaluation | HealthPredict AI{% endblock %}
+{% block content %}
+<div class="p8-page">
+  <div class="p8-header">
+    <div><span class="p8-kicker">PHASE 8 · RESEARCH METHODOLOGY</span><h1>Research-Grade Model Evaluation</h1><p>Repeated cross-validation, probability error, calibration and a controlled comparison of static versus adaptive ensemble weighting.</p></div>
+    <div class="p8-badge">ACADEMIC EVALUATION</div>
+  </div>
+  <div class="p8-note"><strong>Important:</strong> These results describe model behaviour on the research dataset. They are not clinical validation, diagnostic accuracy claims, or evidence of patient outcome prediction.</div>
+
+  <div class="p8-grid">
+    <div class="p8-card"><span>Evaluation Protocol</span><strong>3 × 5-Fold</strong><small>15 outer test folds</small></div>
+    <div class="p8-card"><span>Adaptive Weight Selection</span><strong>Inner 3-Fold</strong><small>Training data only</small></div>
+    <div class="p8-card"><span>Best Mean ROC-AUC</span><strong>{{ '%.2f'|format(best_auc.metrics.roc_auc.mean*100) }}%</strong><small>{{ best_auc.name }}</small></div>
+    <div class="p8-card"><span>Lowest Mean Brier</span><strong>{{ '%.4f'|format(best_brier.metrics.brier.mean) }}</strong><small>{{ best_brier.name }} · lower is better</small></div>
+  </div>
+
+  <section class="p8-card">
+    <div class="p8-head"><div><h2>Repeated Cross-Validation Comparison</h2><p>Mean ± standard deviation across 15 outer test folds.</p></div></div>
+    <div class="table-wrap"><table class="p8-table"><thead><tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th><th>Brier</th></tr></thead><tbody>
+    {% for r in rows %}<tr class="{% if r.key in ['static','adaptive'] %}ensemble-row{% endif %}"><td><strong>{{ r.name }}</strong>{% if r.key == 'adaptive' %}<span class="p8-tag">CURRENT</span>{% endif %}</td>{% for metric in ['accuracy','precision','recall','f1','roc_auc'] %}<td>{{ '%.2f'|format(r.metrics[metric].mean*100) }}% <small>± {{ '%.2f'|format(r.metrics[metric].std*100) }}</small></td>{% endfor %}<td>{{ '%.4f'|format(r.metrics.brier.mean) }} <small>± {{ '%.4f'|format(r.metrics.brier.std) }}</small></td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+
+  <div class="p8-two">
+    <section class="p8-card"><div class="p8-head"><div><h2>Performance Profile</h2><p>Mean ROC-AUC and F1 across repeated outer folds.</p></div></div><div class="chart-box"><canvas id="metricChart"></canvas></div></section>
+    <section class="p8-card"><div class="p8-head"><div><h2>Probability Calibration</h2><p>Observed positive frequency versus mean predicted probability. Closer to the diagonal is better.</p></div></div><div class="chart-box"><canvas id="calibrationChart"></canvas></div></section>
+  </div>
+
+  {% set diff = report.models.comparisons.adaptive_vs_static %}
+  <section class="p8-card comparison">
+    <div class="p8-head"><div><h2>Adaptive Ensemble vs Static Average</h2><p>Difference = Adaptive mean − Static mean. For Brier score, negative is preferable.</p></div></div>
+    <div class="compare-grid">
+      {% for key,label in [('accuracy','Accuracy'),('precision','Precision'),('recall','Recall'),('f1','F1'),('roc_auc','ROC-AUC'),('brier','Brier')] %}
+      <div><span>{{ label }}</span><strong class="{% if key == 'brier' and diff[key] < 0 %}good{% elif key != 'brier' and diff[key] > 0 %}good{% endif %}">{{ '%+.4f'|format(diff[key]) }}</strong></div>
+      {% endfor %}
+    </div>
+    <div class="interpret"><strong>Research interpretation:</strong> The adaptive method is evaluated without assuming it is superior. In this repeated experiment it shows a small mean improvement over static averaging on accuracy, precision, F1 and ROC-AUC, equal mean recall, and a slightly lower mean Brier score. The differences are small and should not be treated as proof of general superiority.</div>
+  </section>
+
+  <section class="p8-card">
+    <div class="p8-head"><div><h2>Methodological Strengths</h2><p>What Phase 8 adds to the research methodology.</p></div></div>
+    <div class="finding-grid">
+      <div><strong>Leakage control</strong><p>Outer test folds are never used to choose adaptive weights. Weight selection uses an inner validation procedure on the outer training data.</p></div>
+      <div><strong>Stability</strong><p>Three repeated 5-fold evaluations reduce dependence on a single train/test split and report variability using standard deviation.</p></div>
+      <div><strong>Probability quality</strong><p>Brier score and calibration curves evaluate probability behaviour separately from classification accuracy.</p></div>
+      <div><strong>Fair comparison</strong><p>Static probability averaging and sample-adaptive weighting are evaluated under the same repeated outer folds.</p></div>
+    </div>
+  </section>
+
+  <div class="p8-footer"><strong>Research-use notice:</strong> This module is for MCA academic evaluation, experiment documentation and research-paper support. It does not establish clinical effectiveness or replace professional medical assessment.</div>
+</div>
+<style>
+.p8-page{max-width:1250px;margin:0 auto;padding:38px 24px 60px;color:#17324d}.p8-header{display:flex;justify-content:space-between;gap:25px;align-items:flex-start;margin-bottom:22px}.p8-kicker{font-size:11px;letter-spacing:1.5px;color:#1670dc;font-weight:800}.p8-header h1{margin:6px 0 8px;font-size:32px}.p8-header p{margin:0;color:#6a7d90;max-width:790px;line-height:1.6}.p8-badge{background:#edf6ff;border:1px solid #d5e9fb;color:#1769aa;padding:9px 13px;border-radius:20px;font-size:11px;font-weight:800;white-space:nowrap}.p8-note,.p8-footer{padding:14px 17px;border-radius:12px;background:#f3f8fd;border:1px solid #dfedf8;color:#607488;font-size:13px;line-height:1.6;margin-bottom:22px}.p8-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}.p8-card{background:#fff;border:1px solid #e2edf6;border-radius:16px;box-shadow:0 8px 25px rgba(32,88,130,.06);padding:22px;margin-bottom:20px}.p8-grid .p8-card{margin-bottom:0}.p8-grid span{display:block;font-size:12px;color:#708399;font-weight:600}.p8-grid strong{display:block;font-size:25px;margin:8px 0 3px;color:#1769aa}.p8-grid small{color:#6c7d8e}.p8-head{margin-bottom:15px}.p8-head h2{font-size:19px;margin:0 0 5px}.p8-head p{margin:0;color:#7b8b9c;font-size:12px}.table-wrap{overflow-x:auto}.p8-table{width:100%;border-collapse:collapse;font-size:13px}.p8-table th,.p8-table td{padding:13px 10px;border-bottom:1px solid #edf2f6;text-align:left;white-space:nowrap}.p8-table th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#708399;background:#f8fbfe}.p8-table td small{color:#7d8e9e;font-size:10px}.ensemble-row{background:#fbfdff}.p8-tag{display:inline-block;margin-left:7px;padding:3px 6px;border-radius:8px;background:#edf6ff;color:#1769aa;font-size:9px}.p8-two{display:grid;grid-template-columns:1fr 1fr;gap:0}.chart-box{height:340px;position:relative}.compare-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.compare-grid>div{padding:14px;border:1px solid #e5eef6;border-radius:11px;background:#fbfdff}.compare-grid span{display:block;font-size:11px;color:#738598}.compare-grid strong{display:block;font-size:20px;margin-top:5px}.compare-grid strong.good{color:#16734a}.interpret{margin-top:15px;padding:14px 16px;background:#f6faff;border:1px solid #dfedf8;border-radius:11px;font-size:12px;line-height:1.65;color:#607488}.finding-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.finding-grid>div{padding:16px;border:1px solid #e5eef6;border-radius:12px;background:#fbfdff}.finding-grid strong{font-size:13px}.finding-grid p{font-size:12px;line-height:1.6;color:#687b8e;margin:7px 0 0}.p8-footer{margin-bottom:0}@media(max-width:950px){.p8-grid{grid-template-columns:1fr 1fr}.p8-two{grid-template-columns:1fr}.compare-grid{grid-template-columns:repeat(3,1fr)}.finding-grid{grid-template-columns:1fr}.p8-header{flex-direction:column}}@media(max-width:600px){.p8-grid{grid-template-columns:1fr}.compare-grid{grid-template-columns:1fr 1fr}.p8-page{padding:25px 14px}.p8-header h1{font-size:26px}}
+</style>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+<script>
+const labels={{ rows|map(attribute='name')|list|tojson }};
+const data={{ report.models|tojson }};
+const keys=['lr','rf','gb','svm','static','adaptive'];
+const auc=keys.map(k=>data[k].roc_auc.mean);
+const f1=keys.map(k=>data[k].f1.mean);
+new Chart(document.getElementById('metricChart'),{type:'bar',data:{labels:labels,datasets:[{label:'ROC-AUC',data:auc,borderWidth:1},{label:'F1',data:f1,borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:.75,max:1,title:{display:true,text:'Score'}}}}});
+const calKeys=['lr','rf','gb','svm','static','adaptive'];
+const datasets=calKeys.map(k=>({label:labels[keys.indexOf(k)],data:data[k].calibration.mean_predicted.map((x,i)=>({x:x,y:data[k].calibration.observed_fraction[i]})),showLine:true,fill:false,tension:.1,pointRadius:3,borderWidth:2}));
+datasets.push({label:'Perfect calibration',data:[{x:0,y:0},{x:1,y:1}],showLine:true,fill:false,pointRadius:0,borderWidth:1,borderDash:[5,5]});
+new Chart(document.getElementById('calibrationChart'),{type:'scatter',data:{datasets:datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',min:0,max:1,title:{display:true,text:'Mean predicted probability'}},y:{min:0,max:1,title:{display:true,text:'Observed positive fraction'}}}}});
+</script>
+{% endblock %}

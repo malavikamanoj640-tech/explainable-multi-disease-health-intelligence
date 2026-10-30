@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+
+{% block title %}Research Analytics | HealthPredict AI{% endblock %}
+
+{% block content %}
+<div class="ra-page">
+  <div class="ra-header">
+    <div>
+      <span class="ra-kicker">MODEL EVALUATION LABORATORY</span>
+      <h1>Advanced Research Analytics</h1>
+      <p>Benchmarking the heart-disease models, ensemble strategies and cross-validation stability used by the system.</p>
+    </div>
+    <div class="ra-badge">RESEARCH / BENCHMARK</div>
+  </div>
+
+  <div class="ra-note"><strong>Important:</strong> These are machine-learning evaluation metrics on the research dataset. They are not clinical performance claims, diagnoses, or guarantees of individual patient outcomes.</div>
+
+  <div class="ra-grid metrics">
+    <div class="ra-card metric"><span>Best Accuracy</span><strong>{{ '%.2f'|format(best_accuracy[1].accuracy*100) }}%</strong><small>{{ best_accuracy[0] }}</small></div>
+    <div class="ra-card metric"><span>Best F1 Score</span><strong>{{ '%.2f'|format(best_f1[1].f1*100) }}%</strong><small>{{ best_f1[0] }}</small></div>
+    <div class="ra-card metric"><span>Best ROC-AUC</span><strong>{{ '%.2f'|format(best_auc[1].roc_auc*100) }}%</strong><small>{{ best_auc[0] }}</small></div>
+    <div class="ra-card metric"><span>Best Recall</span><strong>{{ '%.2f'|format(best_recall[1].recall*100) }}%</strong><small>{{ best_recall[0] }}</small></div>
+  </div>
+
+  <section class="ra-card">
+    <div class="ra-section-head"><div><h2>Model Performance Comparison</h2><p>Metrics from the stratified 80/20 benchmark split.</p></div></div>
+    <div class="table-responsive"><table class="ra-table"><thead><tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th></tr></thead><tbody>
+    {% for name, m in models.items() %}<tr><td><strong>{{ name }}</strong>{% if name == 'Adaptive Ensemble' %}<span class="ra-tag">ADAPTIVE</span>{% endif %}</td><td>{{ '%.2f'|format(m.accuracy*100) }}%</td><td>{{ '%.2f'|format(m.precision*100) }}%</td><td>{{ '%.2f'|format(m.recall*100) }}%</td><td>{{ '%.2f'|format(m.f1*100) }}%</td><td>{{ '%.2f'|format(m.roc_auc*100) }}%</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+
+  <div class="ra-two">
+    <section class="ra-card"><div class="ra-section-head"><div><h2>ROC Curve</h2><p>Higher area under the curve indicates stronger ranking ability on this split.</p></div></div><div class="chart-box"><canvas id="rocChart"></canvas></div></section>
+    <section class="ra-card"><div class="ra-section-head"><div><h2>Cross-Validation Stability</h2><p>Five-fold ROC-AUC results for the individual models.</p></div></div><div class="chart-box"><canvas id="cvChart"></canvas></div></section>
+  </div>
+
+  <div class="ra-two">
+    <section class="ra-card"><div class="ra-section-head"><div><h2>Confusion Matrix — Adaptive Ensemble</h2><p>Research split: actual vs predicted classes.</p></div></div>
+      {% set cm = report.adaptive_ensemble.confusion_matrix %}
+      <div class="cm-wrap"><div class="cm-axis">Predicted</div><div class="cm-grid"><div class="cm-label"></div><div class="cm-label">Low</div><div class="cm-label">High</div><div class="cm-label"><strong>Low</strong></div><div class="cm-cell">{{ cm[0][0] }}<small>TN</small></div><div class="cm-cell">{{ cm[0][1] }}<small>FP</small></div><div class="cm-label"><strong>High</strong></div><div class="cm-cell">{{ cm[1][0] }}<small>FN</small></div><div class="cm-cell">{{ cm[1][1] }}<small>TP</small></div></div></div>
+    </section>
+    <section class="ra-card"><div class="ra-section-head"><div><h2>Probability Error</h2><p>Brier score — lower is better.</p></div></div><div class="chart-box"><canvas id="brierChart"></canvas></div></section>
+  </div>
+
+  <section class="ra-card research-findings">
+    <div class="ra-section-head"><div><h2>Research Findings</h2><p>Interpretation of the current benchmark without overstating the adaptive method.</p></div></div>
+    <div class="finding-grid">
+      <div><strong>Dataset</strong><p>{{ report.dataset.rows }} records and {{ report.dataset.features|length }} predictor variables. Target: <code>HeartDisease</code>.</p></div>
+      <div><strong>Ensemble comparison</strong><p>On this split, static probability averaging has higher accuracy and F1 than the adaptive ensemble, while both have the same recall.</p></div>
+      <div><strong>Adaptive weighting</strong><p>Global weights are derived from validation F1 and then adjusted per sample using model confidence. This is a research mechanism, not a clinical weighting standard.</p></div>
+      <div><strong>Validation</strong><p>Five-fold ROC-AUC is reported for the four individual models. Repeated CV and externally validated calibration would be appropriate for stronger future evidence.</p></div>
+    </div>
+  </section>
+
+  <div class="ra-footer-note"><strong>Research-use notice:</strong> The dashboard is intended for academic evaluation, model comparison and research documentation. It must not be used as a substitute for professional medical assessment.</div>
+</div>
+
+<style>
+.ra-page{max-width:1250px;margin:0 auto;padding:38px 24px 60px;color:#17324d}.ra-header{display:flex;justify-content:space-between;gap:25px;align-items:flex-start;margin-bottom:22px}.ra-kicker{font-size:11px;letter-spacing:1.5px;color:#1670dc;font-weight:800}.ra-header h1{margin:6px 0 8px;font-size:32px}.ra-header p{margin:0;color:#6a7d90;max-width:760px;line-height:1.6}.ra-badge{background:#edf6ff;border:1px solid #d5e9fb;color:#1769aa;padding:9px 13px;border-radius:20px;font-size:11px;font-weight:800;white-space:nowrap}.ra-note,.ra-footer-note{padding:14px 17px;border-radius:12px;background:#f3f8fd;border:1px solid #dfedf8;color:#607488;font-size:13px;line-height:1.6;margin-bottom:22px}.ra-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}.ra-card{background:#fff;border:1px solid #e2edf6;border-radius:16px;box-shadow:0 8px 25px rgba(32,88,130,.06);padding:22px;margin-bottom:20px}.metric span{display:block;font-size:12px;color:#708399;font-weight:600}.metric strong{display:block;font-size:27px;margin:8px 0 3px;color:#1769aa}.metric small{color:#6c7d8e}.ra-section-head{display:flex;justify-content:space-between;margin-bottom:15px}.ra-section-head h2{font-size:19px;margin:0 0 5px}.ra-section-head p{margin:0;color:#7b8b9c;font-size:12px}.ra-table{width:100%;border-collapse:collapse;font-size:13px}.ra-table th,.ra-table td{padding:13px 12px;border-bottom:1px solid #edf2f6;text-align:left}.ra-table th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#708399;background:#f8fbfe}.ra-tag{display:inline-block;margin-left:8px;padding:3px 6px;border-radius:8px;background:#edf6ff;color:#1769aa;font-size:9px}.ra-two{display:grid;grid-template-columns:1fr 1fr;gap:0 0}.chart-box{height:330px;position:relative}.cm-wrap{padding:15px 20px 5px}.cm-axis{text-align:center;font-size:12px;color:#7a8b9c;margin-bottom:8px}.cm-grid{display:grid;grid-template-columns:70px 1fr 1fr;max-width:420px;margin:auto;gap:5px;text-align:center}.cm-label{padding:12px 5px;color:#718398;font-size:12px}.cm-cell{min-height:95px;background:#f3f8fd;border:1px solid #dceaf5;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:25px;font-weight:800;color:#1769aa}.cm-cell small{font-size:10px;color:#7b8b9c;margin-top:4px}.finding-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.finding-grid>div{padding:16px;border:1px solid #e5eef6;border-radius:12px;background:#fbfdff}.finding-grid strong{font-size:13px}.finding-grid p{font-size:12px;line-height:1.6;color:#687b8e;margin:7px 0 0}.finding-grid code{font-size:11px}.ra-footer-note{margin-top:0;margin-bottom:0}
+@media(max-width:900px){.ra-grid{grid-template-columns:1fr 1fr}.ra-two{grid-template-columns:1fr}.finding-grid{grid-template-columns:1fr}.ra-header{flex-direction:column}}@media(max-width:600px){.ra-grid{grid-template-columns:1fr}.ra-page{padding:25px 14px}.ra-header h1{font-size:26px}.ra-table{min-width:700px}}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+<script>
+const roc={{ report.roc_curves|tojson }};
+const cv={{ report.get('five_fold_cv_roc_auc', {})|tojson }};
+const brier={{ report.brier_scores|tojson }};
+const chartOpts={responsive:true,maintainAspectRatio:false};
+new Chart(document.getElementById('rocChart'),{type:'line',data:{datasets:Object.entries(roc).map(([name,v])=>({label:name,data:v.fpr.map((x,i)=>({x:x,y:v.tpr[i]})),fill:false,tension:.15,pointRadius:0,borderWidth:2}))},options:{...chartOpts,scales:{x:{type:'linear',min:0,max:1,title:{display:true,text:'False Positive Rate'}},y:{min:0,max:1,title:{display:true,text:'True Positive Rate'}}}}});
+const cvKeys=['lr','rf','gb','svm'];
+const cvLabels=['Logistic Regression','Random Forest','Gradient Boosting','SVM'];
+const cvMean=cvKeys.map(k=>Number(cv?.[k]?.mean ?? 0));
+const cvStd=cvKeys.map(k=>Number(cv?.[k]?.std ?? 0));
+new Chart(document.getElementById('cvChart'),{type:'bar',data:{labels:cvLabels,datasets:[{label:'Mean ROC-AUC',data:cvMean,borderWidth:1},{label:'Std. deviation',data:cvStd,borderWidth:1}]},options:{...chartOpts,scales:{y:{min:0,max:1,title:{display:true,text:'ROC-AUC'}}},plugins:{tooltip:{callbacks:{label:(ctx)=>`${ctx.dataset.label}: ${Number(ctx.raw).toFixed(4)}`}}}}});
+new Chart(document.getElementById('brierChart'),{type:'bar',data:{labels:Object.keys(brier),datasets:[{label:'Brier score',data:Object.values(brier),borderWidth:1}]},options:{...chartOpts,scales:{y:{beginAtZero:true}}}});
+</script>
+{% endblock %}

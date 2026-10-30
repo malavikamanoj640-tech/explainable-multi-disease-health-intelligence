@@ -1,0 +1,1701 @@
+{% extends "layout.html" %}
+
+{% block title %}Prediction Details{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* ============================================================
+   PREDICTION DETAIL PAGE
+   ============================================================ */
+
+.prediction-detail-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 34px 22px 70px;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.report-header {
+    background: linear-gradient(135deg, #0b315b 0%, #1769aa 65%, #2786d9 100%);
+    color: white;
+    border-radius: 24px;
+    padding: 34px 38px;
+    margin-bottom: 25px;
+    box-shadow: 0 14px 38px rgba(11, 49, 91, 0.16);
+    position: relative;
+    overflow: hidden;
+}
+
+.report-header::after {
+    content: "";
+    position: absolute;
+    width: 230px;
+    height: 230px;
+    border-radius: 50%;
+    right: -80px;
+    top: -110px;
+    background: rgba(255,255,255,0.07);
+}
+
+.report-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+}
+
+.report-kicker {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.7px;
+    text-transform: uppercase;
+    opacity: 0.78;
+    margin-bottom: 9px;
+    color: white;
+}
+
+.report-title {
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 800;
+    color: white;
+}
+
+.report-date {
+    margin: 10px 0 0;
+    opacity: 0.82;
+    font-size: 14px;
+    color: white;
+}
+
+.report-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-top: 17px;
+}
+
+.header-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 11px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.13);
+    border: 1px solid rgba(255,255,255,0.22);
+    color: white;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.13);
+    border: 1px solid rgba(255,255,255,0.30);
+    color: white !important;
+    padding: 12px 18px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: white;
+    color: #1769aa !important;
+}
+
+
+/* ============================================================
+   QUICK METRICS
+   ============================================================ */
+
+.quick-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.metric-card {
+    background: white;
+    border: 1px solid #e3edf5;
+    border-radius: 17px;
+    padding: 19px 20px;
+    box-shadow: 0 6px 22px rgba(11,31,51,0.055);
+}
+
+.metric-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.metric-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: #eaf4fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.metric-label {
+    margin-top: 13px;
+    color: #718096;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.metric-value {
+    color: #0b1f33;
+    font-size: 19px;
+    font-weight: 800;
+    margin-top: 4px;
+}
+
+.metric-sub {
+    color: #8392a2;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+
+/* ============================================================
+   RESULT SUMMARY
+   ============================================================ */
+
+.result-grid {
+    display: grid;
+    grid-template-columns: 1.18fr 0.82fr;
+    gap: 22px;
+    margin-bottom: 25px;
+}
+
+.result-card {
+    background: white;
+    border: 1px solid #e2ecf4;
+    border-radius: 21px;
+    padding: 29px;
+    box-shadow: 0 8px 27px rgba(11,31,51,0.06);
+}
+
+.result-card-label {
+    color: #718096;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.result-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 17px;
+    padding: 9px 15px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.result-status.low {
+    background: #e9f8ef;
+    color: #187443;
+}
+
+.result-status.high {
+    background: #fff0f0;
+    color: #c0392b;
+}
+
+.result-title {
+    margin: 14px 0 7px;
+    font-size: 27px;
+    line-height: 1.25;
+    font-weight: 800;
+    color: #0b1f33;
+}
+
+.result-description {
+    color: #66788a;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+
+/* ============================================================
+   PROBABILITY
+   ============================================================ */
+
+.probability-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.probability-layout {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-top: 19px;
+}
+
+.probability-ring {
+    --progress: {{ confidence|float }}%;
+
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    background:
+        conic-gradient(
+            #1769aa var(--progress),
+            #e9f1f7 0
+        );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 18px rgba(23,105,170,0.10);
+}
+
+.probability-ring-inner {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.probability-value {
+    font-size: 25px;
+    font-weight: 850;
+    color: #0b315b;
+    line-height: 1;
+}
+
+.probability-symbol {
+    font-size: 10px;
+    color: #718096;
+    margin-top: 6px;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+}
+
+.probability-text {
+    color: #66788a;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.probability-text strong {
+    color: #0b315b;
+}
+
+
+/* ============================================================
+   SECTION CARDS
+   ============================================================ */
+
+.section-card {
+    background: white;
+    border: 1px solid #e2ecf4;
+    border-radius: 21px;
+    padding: 29px;
+    margin-bottom: 25px;
+    box-shadow: 0 7px 26px rgba(11,31,51,0.05);
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+}
+
+.section-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 13px;
+    background: #eaf4fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    flex-shrink: 0;
+}
+
+.section-heading h3 {
+    margin: 0;
+    color: #0b1f33;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.section-description {
+    color: #718096;
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 0 0 23px 59px;
+}
+
+
+/* ============================================================
+   INPUT SUMMARY BAR
+   ============================================================ */
+
+.input-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    background: #f7fafc;
+    border: 1px solid #e7eef4;
+    border-radius: 14px;
+    padding: 13px 16px;
+    margin-bottom: 17px;
+}
+
+.input-summary-left {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #53677a;
+    font-size: 13px;
+}
+
+.input-summary-left strong {
+    color: #0b1f33;
+}
+
+.input-summary-badge {
+    padding: 6px 10px;
+    background: #eaf4fb;
+    color: #1769aa;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+
+/* ============================================================
+   INPUT GRID
+   ============================================================ */
+
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.input-item {
+    background: #f8fafc;
+    border: 1px solid #e5edf3;
+    border-radius: 14px;
+    padding: 17px 18px;
+    min-height: 84px;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.input-item:hover {
+    transform: translateY(-2px);
+    border-color: #cbddea;
+    box-shadow: 0 7px 20px rgba(11,31,51,0.07);
+}
+
+.input-label {
+    display: block;
+    color: #78899a;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.65px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.input-value {
+    color: #0b1f33;
+    font-size: 16px;
+    font-weight: 750;
+    word-break: break-word;
+}
+
+
+/* ============================================================
+   MODEL INTERPRETATION
+   ============================================================ */
+
+.interpretation-box {
+    background: linear-gradient(135deg, #f5faff, #eef7fd);
+    border: 1px solid #dcecf8;
+    border-radius: 17px;
+    padding: 24px;
+}
+
+.interpretation-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.interpretation-label {
+    color: #718096;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+}
+
+.interpretation-number {
+    color: #1769aa;
+    font-size: 30px;
+    font-weight: 850;
+}
+
+.progress-track {
+    width: 100%;
+    height: 11px;
+    background: #dce8f1;
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 17px 0 14px;
+}
+
+.progress-fill {
+    height: 100%;
+    width: {{ confidence|float }}%;
+    background: linear-gradient(90deg, #1769aa, #2786d9);
+    border-radius: inherit;
+}
+
+.progress-scale {
+    display: flex;
+    justify-content: space-between;
+    color: #8493a1;
+    font-size: 11px;
+    margin-bottom: 17px;
+}
+
+.interpretation-note {
+    color: #657789;
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 0;
+}
+
+
+/* ============================================================
+   MODEL OUTPUT INSIGHT
+   ============================================================ */
+
+.insight-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.insight-card {
+    background: white;
+    border: 1px solid #dceaf4;
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.insight-label {
+    display: block;
+    color: #81909e;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.insight-value {
+    color: #0b1f33;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.insight-value.high {
+    color: #c0392b;
+}
+
+.insight-value.low {
+    color: #187443;
+}
+
+
+/* ============================================================
+   ASSESSMENT METADATA
+   ============================================================ */
+
+.metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.metadata-item {
+    background: #f8fafc;
+    border: 1px solid #e5edf3;
+    border-radius: 14px;
+    padding: 17px;
+}
+
+.metadata-item span {
+    display: block;
+    color: #82909e;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.metadata-item strong {
+    color: #0b1f33;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+
+/* ============================================================
+   NOTICE
+   ============================================================ */
+
+.medical-notice {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    background: #fff9e8;
+    border: 1px solid #f4df9b;
+    border-radius: 17px;
+    padding: 21px;
+    margin-bottom: 25px;
+}
+
+.notice-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.notice-title {
+    color: #765900;
+    font-weight: 800;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.notice-text {
+    color: #756b4e;
+    font-size: 13px;
+    line-height: 1.65;
+    margin: 0;
+}
+
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+
+.report-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.action-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 12px 18px;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid #dce6ee;
+    background: white;
+    color: #1769aa;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    background: #eaf4fb;
+    border-color: #bcd9ed;
+    color: #0b5d96;
+    transform: translateY(-1px);
+}
+
+.action-btn.primary {
+    background: #1769aa;
+    color: white;
+    border-color: #1769aa;
+}
+
+.action-btn.primary:hover {
+    background: #0b5d96;
+    color: white;
+}
+
+.action-btn.secondary {
+    background: #f7fafc;
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    body {
+        background: white !important;
+    }
+
+    .prediction-detail-page {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .back-btn,
+    .report-actions {
+        display: none !important;
+    }
+
+    .report-header {
+        box-shadow: none;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .result-card,
+    .section-card,
+    .medical-notice,
+    .metric-card {
+        box-shadow: none;
+        break-inside: avoid;
+    }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1050px) {
+
+    .quick-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .input-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .metadata-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .insight-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 900px) {
+
+    .result-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .prediction-detail-page {
+        padding: 20px 12px 45px;
+    }
+
+    .report-header {
+        padding: 25px 21px;
+        border-radius: 18px;
+    }
+
+    .report-title {
+        font-size: 25px;
+    }
+
+    .quick-metrics {
+        grid-template-columns: 1fr 1fr;
+        gap: 11px;
+    }
+
+    .metric-card {
+        padding: 16px;
+    }
+
+    .result-card,
+    .section-card {
+        padding: 21px;
+        border-radius: 17px;
+    }
+
+    .input-grid,
+    .metadata-grid,
+    .insight-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .probability-layout {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .section-description {
+        margin-left: 0;
+    }
+
+    .input-summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .report-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .action-group {
+        width: 100%;
+    }
+
+    .action-btn {
+        flex: 1;
+    }
+
+}
+
+
+@media (max-width: 420px) {
+
+    .quick-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .report-header-meta {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .header-tag {
+        width: fit-content;
+    }
+
+}
+
+</style>
+
+
+<div class="prediction-detail-page">
+
+
+    <!-- =====================================================
+         REPORT HEADER
+         ===================================================== -->
+
+    <div class="report-header">
+
+        <div class="report-header-top">
+
+            <div>
+
+                <div class="report-kicker">
+                    Historical Assessment · Prediction Record
+                </div>
+
+                <h1 class="report-title">
+                    {{ disease_name }} Risk Assessment
+                </h1>
+
+                <p class="report-date" style="color: black;">
+
+                    {{ disease_name }}
+
+                    ·
+
+                    {{ prediction_date.strftime('%d %B %Y, %I:%M %p')
+                       if prediction_date else 'Date unavailable' }}
+
+                </p>
+
+                <div class="report-header-meta">
+
+                    <span class="header-tag">
+                        🧠 Machine Learning
+                    </span>
+
+                    <span class="header-tag">
+                        📋 Historical Record
+                    </span>
+
+                    <span class="header-tag">
+                        🔐 Saved Assessment
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <a href="{{ url_for('history') }}" class="back-btn">
+                ← Prediction History
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         QUICK METRICS
+         ===================================================== -->
+
+    <div class="quick-metrics">
+
+
+        <div class="metric-card">
+
+            <div class="metric-top">
+
+                <div class="metric-icon">
+                    🧬
+                </div>
+
+            </div>
+
+            <div class="metric-label">
+                Disease
+            </div>
+
+            <div class="metric-value">
+                {{ disease_name }}
+            </div>
+
+            <div class="metric-sub">
+                Assessment category
+            </div>
+
+        </div>
+
+
+        <div class="metric-card">
+
+            <div class="metric-top">
+
+                <div class="metric-icon">
+                    📊
+                </div>
+
+            </div>
+
+            <div class="metric-label">
+                Confidence
+            </div>
+
+            <div class="metric-value">
+                {{ '%.1f'|format(confidence|float) }}%
+            </div>
+
+            <div class="metric-sub">
+                Predicted class probability
+            </div>
+
+        </div>
+
+
+        <div class="metric-card">
+
+            <div class="metric-top">
+
+                <div class="metric-icon">
+                    📋
+                </div>
+
+            </div>
+
+            <div class="metric-label">
+                Input Parameters
+            </div>
+
+            <div class="metric-value">
+                {{ user_data|length }}
+            </div>
+
+            <div class="metric-sub">
+                Stored assessment values
+            </div>
+
+        </div>
+
+
+        <div class="metric-card">
+
+            <div class="metric-top">
+
+                <div class="metric-icon">
+                    {% if 'High' in prediction %}
+                        ⚠️
+                    {% else %}
+                        ✓
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div class="metric-label">
+                Risk Classification
+            </div>
+
+            <div class="metric-value">
+
+                {% if 'High' in prediction %}
+                    High Risk
+                {% else %}
+                    Low Risk
+                {% endif %}
+
+            </div>
+
+            <div class="metric-sub">
+                Model classification
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         RESULT SUMMARY
+         ===================================================== -->
+
+    <div class="result-grid">
+
+
+        <!-- Prediction -->
+
+        <div class="result-card">
+
+            <div class="result-card-label">
+                Model Prediction
+            </div>
+
+
+            {% if 'High' in prediction %}
+
+                <div class="result-status high">
+                    ⚠ High Risk
+                </div>
+
+            {% else %}
+
+                <div class="result-status low">
+                    ✓ Low Risk
+                </div>
+
+            {% endif %}
+
+
+            <h2 class="result-title">
+                {{ prediction }}
+            </h2>
+
+
+            <p class="result-description">
+
+                Historical machine-learning prediction generated
+                from the clinical values stored for this assessment.
+
+                The result represents the model's classification
+                at the time this assessment was performed.
+
+            </p>
+
+        </div>
+
+
+        <!-- Probability -->
+
+        <div class="result-card probability-card">
+
+            <div class="result-card-label">
+                Predicted Class Probability
+            </div>
+
+
+            <div class="probability-layout">
+
+
+                <div class="probability-ring">
+
+                    <div class="probability-ring-inner">
+
+                        <div class="probability-value">
+                            {{ '%.1f'|format(confidence|float) }}%
+                        </div>
+
+                        <div class="probability-symbol">
+                            MODEL
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="probability-text">
+
+                    Probability assigned by the machine-learning
+                    model to the predicted class.
+
+                    <br><br>
+
+                    <strong>
+                        This is a model-derived probability.
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         ASSESSMENT INPUTS
+         ===================================================== -->
+
+    <div class="section-card">
+
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                📋
+            </div>
+
+            <h3>
+                Assessment Inputs
+            </h3>
+
+        </div>
+
+
+        <p class="section-description">
+
+            Clinical parameters actually stored with this historical
+            machine-learning assessment.
+
+        </p>
+
+
+        <div class="input-summary">
+
+            <div class="input-summary-left">
+
+                <span>📌</span>
+
+                <span>
+                    <strong>{{ user_data|length }}</strong>
+                    stored parameter(s) were used for this record.
+                </span>
+
+            </div>
+
+
+            <span class="input-summary-badge">
+                HISTORICAL SNAPSHOT
+            </span>
+
+        </div>
+
+
+        <div class="input-grid">
+
+
+            {% for key, value in user_data.items() %}
+
+
+                <div class="input-item">
+
+
+                    <span class="input-label">
+
+                        {% if key == 'pregnancies' %}Pregnancies
+
+                        {% elif key == 'glucose' %}Glucose
+
+                        {% elif key == 'blood_pressure' %}Blood Pressure
+
+                        {% elif key == 'skin_thickness' %}Skin Thickness
+
+                        {% elif key == 'insulin' %}Insulin
+
+                        {% elif key == 'bmi' %}BMI
+
+                        {% elif key == 'diabetes_pedigree_function' %}
+                            Diabetes Pedigree Function
+
+                        {% elif key == 'age' %}Age
+
+                        {% elif key == 'sex' %}Sex
+
+                        {% elif key == 'chest_pain_type' %}
+                            Chest Pain Type
+
+                        {% elif key == 'resting_bp' %}
+                            Resting Blood Pressure
+
+                        {% elif key == 'cholesterol' %}
+                            Cholesterol
+
+                        {% elif key == 'fasting_bs' %}
+                            Fasting Blood Sugar
+
+                        {% elif key == 'resting_ecg' %}
+                            Resting ECG
+
+                        {% elif key == 'max_hr' %}
+                            Maximum Heart Rate
+
+                        {% elif key == 'exercise_angina' %}
+                            Exercise Angina
+
+                        {% elif key == 'oldpeak' %}
+                            Oldpeak
+
+                        {% elif key == 'st_slope' %}
+                            ST Slope
+
+                        {% else %}
+                            {{ key.replace('_', ' ').title() }}
+                        {% endif %}
+
+                    </span>
+
+
+                    <span class="input-value">
+
+
+                        {% if key == 'sex' %}
+
+
+                            {% if value|string|upper == 'M' %}
+
+                                Male
+
+                            {% elif value|string|upper == 'F' %}
+
+                                Female
+
+                            {% elif value|string == '1' %}
+
+                                Male
+
+                            {% elif value|string == '0' %}
+
+                                Female
+
+                            {% else %}
+
+                                {{ value }}
+
+                            {% endif %}
+
+
+                        {% elif key == 'fasting_bs' %}
+
+
+                            {% if value|string == '1' %}
+
+                                Elevated
+
+                            {% else %}
+
+                                Normal
+
+                            {% endif %}
+
+
+                        {% elif key == 'exercise_angina' %}
+
+
+                            {% if value|string|upper == 'Y' %}
+
+                                Yes
+
+                            {% elif value|string == '1' %}
+
+                                Yes
+
+                            {% else %}
+
+                                No
+
+                            {% endif %}
+
+
+                        {% elif key == 'resting_bp' %}
+
+                            {{ value }} mmHg
+
+
+                        {% elif key == 'blood_pressure' %}
+
+                            {{ value }} mmHg
+
+
+                        {% elif key == 'cholesterol' %}
+
+                            {{ value }} mg/dL
+
+
+                        {% elif key == 'glucose' %}
+
+                            {{ value }} mg/dL
+
+
+                        {% elif key == 'insulin' %}
+
+                            {{ value }} μIU/mL
+
+
+                        {% elif key == 'max_hr' %}
+
+                            {{ value }} bpm
+
+
+                        {% elif key == 'age' %}
+
+                            {{ value }} years
+
+
+                        {% elif key == 'bmi' %}
+
+                            {{ value }} kg/m²
+
+
+                        {% else %}
+
+                            {{ value }}
+
+                        {% endif %}
+
+
+                    </span>
+
+
+                </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MODEL INTERPRETATION
+         ===================================================== -->
+
+    <div class="section-card">
+
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                📊
+            </div>
+
+            <h3>
+                Prediction Interpretation
+            </h3>
+
+        </div>
+
+
+        <p class="section-description">
+
+            Summary of the model output recorded for this
+            historical assessment.
+
+        </p>
+
+
+        <div class="interpretation-box">
+
+
+            <div class="interpretation-top">
+
+                <div class="interpretation-label">
+                    Predicted Class Probability
+                </div>
+
+                <div class="interpretation-number">
+                    {{ '%.1f'|format(confidence|float) }}%
+                </div>
+
+            </div>
+
+
+            <div class="progress-track">
+
+                <div class="progress-fill"></div>
+
+            </div>
+
+
+            <div class="progress-scale">
+
+                <span>0%</span>
+
+                <span>25%</span>
+
+                <span>50%</span>
+
+                <span>75%</span>
+
+                <span>100%</span>
+
+            </div>
+
+
+            <p class="interpretation-note">
+
+                This value represents the probability assigned by
+                the machine-learning model to the predicted class
+                at the time of this assessment. It should not be
+                interpreted as a calibrated clinical risk score,
+                diagnosis, or guarantee of outcome.
+
+            </p>
+
+
+            <div class="insight-grid">
+
+
+                <div class="insight-card">
+
+                    <span class="insight-label">
+                        Prediction
+                    </span>
+
+                    <span class="insight-value">
+                        {{ prediction }}
+                    </span>
+
+                </div>
+
+
+                <div class="insight-card">
+
+                    <span class="insight-label">
+                        Risk Category
+                    </span>
+
+                    <span class="insight-value
+                        {% if 'High' in prediction %}
+                            high
+                        {% else %}
+                            low
+                        {% endif %}
+                    ">
+
+                        {% if 'High' in prediction %}
+                            Higher Risk
+                        {% else %}
+                            Lower Risk
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+                <div class="insight-card">
+
+                    <span class="insight-label">
+                        Output Type
+                    </span>
+
+                    <span class="insight-value">
+                        Historical Model Output
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ASSESSMENT METADATA
+         ===================================================== -->
+
+    <div class="section-card">
+
+
+        <div class="section-heading">
+
+            <div class="section-icon">
+                🔎
+            </div>
+
+            <h3>
+                Assessment Information
+            </h3>
+
+        </div>
+
+
+        <p class="section-description">
+
+            Traceability information associated with this
+            saved prediction record.
+
+        </p>
+
+
+        <div class="metadata-grid">
+
+
+            <div class="metadata-item">
+
+                <span>
+                    Disease
+                </span>
+
+                <strong>
+                    {{ disease_name }}
+                </strong>
+
+            </div>
+
+
+            <div class="metadata-item">
+
+                <span>
+                    Assessment Date
+                </span>
+
+                <strong>
+
+                    {{ prediction_date.strftime('%d %B %Y')
+                       if prediction_date else 'Date unavailable' }}
+
+                </strong>
+
+            </div>
+
+
+            <div class="metadata-item">
+
+                <span>
+                    Assessment Time
+                </span>
+
+                <strong>
+
+                    {{ prediction_date.strftime('%I:%M %p')
+                       if prediction_date else 'Time unavailable' }}
+
+                </strong>
+
+            </div>
+
+
+            <div class="metadata-item">
+
+                <span>
+                    Stored Parameters
+                </span>
+
+                <strong>
+                    {{ user_data|length }}
+                </strong>
+
+            </div>
+
+
+            <div class="metadata-item">
+
+                <span>
+                    Prediction Status
+                </span>
+
+                <strong>
+                    Saved Historical Record
+                </strong>
+
+            </div>
+
+
+            <div class="metadata-item">
+
+                <span>
+                    Assessment Mode
+                </span>
+
+                <strong>
+                    Machine-Learning Risk Assessment
+                </strong>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MEDICAL NOTICE
+         ===================================================== -->
+
+    <div class="medical-notice">
+
+        <div class="notice-icon">
+            ⚠
+        </div>
+
+
+        <div>
+
+            <div class="notice-title">
+                Medical Information & Research Notice
+            </div>
+
+
+            <p class="notice-text">
+
+                Historical predictions are machine-learning outputs
+                intended for educational and research-oriented risk
+                assessment. They are not medical diagnoses and do
+                not measure disease progression. The probability
+                shown on this page is model-derived and should not
+                be treated as a clinically calibrated risk score.
+                Consult a qualified healthcare professional for
+                appropriate medical evaluation.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ACTIONS
+         ===================================================== -->
+
+    <div class="report-actions">
+
+
+        <a href="{{ url_for('history') }}"
+           class="action-btn">
+
+            ← Back to History
+
+        </a>
+
+
+        <div class="action-group">
+
+
+            <button type="button"
+                    class="action-btn secondary"
+                    onclick="window.print()">
+
+                🖨 Print Report
+
+            </button>
+
+
+            <a href="{{ url_for('dashboard') }}"
+               class="action-btn">
+
+                🏠 Dashboard
+
+            </a>
+
+
+            <a href="{{ url_for('heart_prediction') }}"
+               class="action-btn primary">
+
+                ❤️ New Assessment
+
+            </a>
+
+
+        </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}
