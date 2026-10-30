@@ -1,0 +1,3412 @@
+{% extends "layout.html" %}
+
+{% block title %}Advanced Health Intelligence{% endblock %}
+
+{% block content %}
+
+<div class="container py-4 phase16-page">
+
+    <!-- =========================================================
+         HERO
+    ========================================================== -->
+
+    <section class="p16-hero">
+
+        <div class="p16-hero-content">
+
+            <div class="p16-kicker">
+                PHASE 16
+                <span>•</span>
+                PREVENTIVE HEALTH INTELLIGENCE
+            </div>
+
+            <h1>{{ disease_title }} Intelligence Center</h1>
+
+            <p>
+                Explore longitudinal model-risk trends, ensemble behaviour,
+                hypothetical scenarios and prediction audit information
+                without changing your real assessment history.
+            </p>
+
+            <div class="p16-hero-tags">
+                <span>AI Risk Analysis</span>
+                <span>Ensemble Intelligence</span>
+                <span>What-If Simulation</span>
+                <span>Model Audit</span>
+            </div>
+
+        </div>
+
+        <div class="p16-score-card">
+
+            <div class="score-top">
+
+                <span class="score-icon">◉</span>
+
+                <span class="score-label">
+                    CURRENT HIGH-RISK PROBABILITY
+                </span>
+
+            </div>
+
+            <strong>
+                {{ '%.2f'|format(current_probability) }}%
+            </strong>
+
+            <div class="score-progress">
+                <span style="width: {{ current_probability }}%"></span>
+            </div>
+
+            <div class="score-footer">
+
+                <span>Current output</span>
+
+                <b class="
+                    {% if 'high' in current_prediction|lower %}
+                        risk-high
+                    {% else %}
+                        risk-low
+                    {% endif %}
+                ">
+                    {{ current_prediction }}
+                </b>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         QUICK OVERVIEW
+    ========================================================== -->
+
+    <section class="p16-overview">
+
+        <div class="overview-card">
+
+            <div class="overview-icon blue">
+                ↗
+            </div>
+
+            <div>
+                <small>Trend Direction</small>
+                <strong>{{ trend_direction }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="overview-card">
+
+            <div class="overview-icon purple">
+                ◈
+            </div>
+
+            <div>
+                <small>Model Agreement</small>
+                <strong>{{ disagreement.level }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="overview-card">
+
+            <div class="overview-icon green">
+                ✓
+            </div>
+
+            <div>
+                <small>History Records</small>
+                <strong>{{ trend|length }}</strong>
+            </div>
+
+        </div>
+
+
+        <div class="overview-card">
+
+            <div class="overview-icon orange">
+                AI
+            </div>
+
+            <div>
+                <small>Analysis Mode</small>
+                <strong>Research</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         MAIN ANALYTICS
+    ========================================================== -->
+
+    <div class="p16-grid">
+
+        <!-- =====================================================
+             LONGITUDINAL TREND
+        ====================================================== -->
+
+        <section class="p16-card trend-card">
+
+            <div class="p16-head">
+
+                <div class="section-title">
+
+                    <div class="section-number">
+                        01
+                    </div>
+
+                    <div>
+
+                        <span class="section-label">
+                            LONGITUDINAL ANALYSIS
+                        </span>
+
+                        <h3>
+                            Risk Trend
+                        </h3>
+
+                    </div>
+
+                </div>
+
+                <span class="status-pill">
+                    {{ trend_direction }}
+                </span>
+
+            </div>
+
+
+            {% if trend|length >= 2 %}
+
+            <div class="trend-summary">
+
+                <div>
+
+                    <small>Latest Change</small>
+
+                    <strong class="
+                        {% if trend_delta > 0 %}
+                            value-up
+                        {% elif trend_delta < 0 %}
+                            value-down
+                        {% else %}
+                            value-neutral
+                        {% endif %}
+                    ">
+                        {{ '%+.2f'|format(trend_delta) }} pp
+                    </strong>
+
+                </div>
+
+                <span>
+                    vs previous {{ disease_title }} assessment
+                </span>
+
+            </div>
+
+            {% else %}
+
+            <div class="trend-summary">
+
+                <div>
+
+                    <small>Baseline</small>
+
+                    <strong>
+                        First Assessment
+                    </strong>
+
+                </div>
+
+                <span>
+                    Complete another assessment to establish a trend.
+                </span>
+
+            </div>
+
+            {% endif %}
+
+
+            <div class="p16-chart">
+
+                <canvas id="trendChart"></canvas>
+
+                <div id="chartEmpty" class="chart-empty">
+                    No trend data available
+                </div>
+
+            </div>
+
+
+            {% if trend %}
+
+            <div class="trend-history">
+
+                <div class="history-heading">
+                    <span>Recent Assessments</span>
+                    <span>High-Risk Probability</span>
+                </div>
+
+
+                {% for item in trend[-4:]|reverse %}
+
+                <div class="trend-history-row">
+
+                    <div class="history-date">
+
+                        <span class="history-dot"></span>
+
+                        <span>
+                            {{ item.date }}
+                        </span>
+
+                    </div>
+
+                    <strong>
+                        {{ '%.2f'|format(item.probability) }}%
+                    </strong>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- =====================================================
+             ENSEMBLE AGREEMENT
+        ====================================================== -->
+
+        <section class="p16-card ensemble-card">
+
+            <div class="p16-head">
+
+                <div class="section-title">
+
+                    <div class="section-number purple-number">
+                        02
+                    </div>
+
+                    <div>
+
+                        <span class="section-label">
+                            MODEL EXPLAINABILITY
+                        </span>
+
+                        <h3>
+                            Ensemble Agreement
+                        </h3>
+
+                    </div>
+
+                </div>
+
+                <span class="status-pill">
+                    {{ disagreement.level }}
+                </span>
+
+            </div>
+
+
+            {% if disagreement.spread is not none %}
+
+            <div class="agreement-score">
+
+                <div>
+
+                    <small>
+                        Probability Spread
+                    </small>
+
+                    <strong>
+                        {{ '%.2f'|format(disagreement.spread) }}
+                        <span>pp</span>
+                    </strong>
+
+                </div>
+
+                <div class="agreement-description">
+                    Difference between the component model outputs.
+                </div>
+
+            </div>
+
+            {% endif %}
+
+
+            <div class="model-bars">
+
+                {% for m in current_details %}
+
+                <div class="model-row">
+
+                    <div class="model-info">
+
+                        <div class="model-name">
+                            {{ m.model }}
+                        </div>
+
+                        <div class="model-weight">
+                            Adaptive Weight
+                            <strong>
+                                {{ m.adaptive_weight }}%
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="model-progress">
+
+                        <div class="model-track">
+
+                            <i
+                                style="width: {{ m.high_risk_probability }}%">
+                            </i>
+
+                        </div>
+
+                    </div>
+
+
+                    <strong class="model-value">
+                        {{ m.high_risk_probability }}%
+                    </strong>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="ensemble-message">
+
+                <span class="message-icon">
+                    !
+                </span>
+
+                <div>
+
+                    <strong>
+                        Model Confidence Context
+                    </strong>
+
+                    <p>
+                        {{ disagreement.message }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- =========================================================
+         WHAT-IF SIMULATOR
+    ========================================================== -->
+
+    <section class="p16-card simulator-card">
+
+        <div class="p16-head">
+
+            <div class="section-title">
+
+                <div class="section-number orange-number">
+                    03
+                </div>
+
+                <div>
+
+                    <span class="section-label">
+                        EXPERIMENTAL ANALYSIS
+                    </span>
+
+                    <h3>
+                        What-If Risk Simulator
+                    </h3>
+
+                </div>
+
+            </div>
+
+            <span class="simulation-badge">
+                NOT SAVED TO HISTORY
+            </span>
+
+        </div>
+
+
+        <div class="simulator-intro">
+
+            <div class="simulator-icon">
+                ⚙
+            </div>
+
+            <div>
+
+                <strong>
+                    Explore model behaviour safely
+                </strong>
+
+                <p>
+                    Change one or more input values and observe how the
+                    existing trained model responds. The simulation does
+                    not modify your saved assessment.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form method="POST">
+
+            <div class="sim-fields">
+
+                {% for key,label,input_type,unit in fields %}
+
+                <div class="sim-field">
+
+                    <label for="sim-{{ key }}">
+
+                        {{ label }}
+
+                        {% if unit %}
+                        <small>
+                            {{ unit }}
+                        </small>
+                        {% endif %}
+
+                    </label>
+
+
+                    {% if input_type == 'select' %}
+
+                    <div class="select-wrapper">
+
+                        <select
+                            id="sim-{{ key }}"
+                            name="{{ key }}"
+                            required
+                        >
+
+                            {% for option in select_options.get(key, []) %}
+
+                            <option
+                                value="{{ option }}"
+                                {% if current_inputs.get(key)|string == option|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ option }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    {% else %}
+
+                    <input
+                        id="sim-{{ key }}"
+                        type="number"
+                        step="any"
+                        name="{{ key }}"
+                        value="{{ current_inputs.get(key, '') }}"
+                        required
+                    >
+
+                    {% endif %}
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="simulator-submit">
+
+                <div>
+
+                    <small>
+                        MODEL EXPERIMENT
+                    </small>
+
+                    <span>
+                        Results are hypothetical only.
+                    </span>
+
+                </div>
+
+                <button
+                    class="p16-btn"
+                    type="submit"
+                >
+                    <span>Run Simulation</span>
+                    <b>→</b>
+                </button>
+
+            </div>
+
+        </form>
+
+
+        {% if simulation %}
+
+        <div class="simulation-result">
+
+            <div class="sim-result-box">
+
+                <small>
+                    SAVED ASSESSMENT
+                </small>
+
+                <strong>
+                    {{ '%.2f'|format(current_probability) }}%
+                </strong>
+
+            </div>
+
+
+            <div class="sim-arrow">
+                →
+            </div>
+
+
+            <div class="sim-result-box highlighted">
+
+                <small>
+                    HYPOTHETICAL OUTPUT
+                </small>
+
+                <strong>
+                    {{ '%.2f'|format(simulation.probability) }}%
+                </strong>
+
+            </div>
+
+
+            <div class="
+                sim-delta
+                {% if simulation.delta < 0 %}
+                    down
+                {% elif simulation.delta > 0 %}
+                    up
+                {% else %}
+                    neutral
+                {% endif %}
+            ">
+
+                <small>
+                    DIFFERENCE
+                </small>
+
+                <strong>
+                    {{ '%+.2f'|format(simulation.delta) }} pp
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="simulation-warning">
+
+            <span>ⓘ</span>
+
+            <div>
+
+                <strong>
+                    Interpretation
+                </strong>
+
+                <p>
+                    The hypothetical values changed the trained model's
+                    high-risk probability by
+                    <strong>
+                        {{ '%+.2f'|format(simulation.delta) }}
+                        percentage points
+                    </strong>.
+                    This does not establish that changing a health factor
+                    would cause the same medical risk change.
+                </p>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =========================================================
+         AUDIT
+    ========================================================== -->
+
+    <section class="p16-card audit-card">
+
+        <div class="p16-head">
+
+            <div class="section-title">
+
+                <div class="section-number green-number">
+                    04
+                </div>
+
+                <div>
+
+                    <span class="section-label">
+                        RESEARCH TRACEABILITY
+                    </span>
+
+                    <h3>
+                        Prediction Audit
+                    </h3>
+
+                </div>
+
+            </div>
+
+            <span class="audit-status">
+                ✓ TRACEABLE
+            </span>
+
+        </div>
+
+
+        {% if audit %}
+
+        <div class="audit-grid">
+
+            <div class="audit-item">
+
+                <small>
+                    PREDICTION ID
+                </small>
+
+                <strong>
+                    #{{ prediction_id }}
+                </strong>
+
+            </div>
+
+
+            <div class="audit-item">
+
+                <small>
+                    MODEL VERSION
+                </small>
+
+                <strong>
+                    {{ audit.model_version }}
+                </strong>
+
+            </div>
+
+
+            <div class="audit-item">
+
+                <small>
+                    DECISION THRESHOLD
+                </small>
+
+                <strong>
+                    {{ '%.2f'|format(audit.decision_threshold) }}
+                </strong>
+
+            </div>
+
+
+            <div class="audit-item">
+
+                <small>
+                    DATASET REFERENCE
+                </small>
+
+                <strong>
+                    {{ audit.dataset_reference }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="audit-footer">
+
+            <div>
+
+                <span class="audit-lock">
+                    🔒
+                </span>
+
+                <div>
+
+                    <strong>
+                        Reproducible prediction record
+                    </strong>
+
+                    <p>
+                        Model configuration and decision metadata are
+                        associated with this prediction.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <a
+                class="audit-link"
+                href="{{ url_for('prediction_audit', prediction_id=prediction_id) }}"
+            >
+                Open Complete Audit
+                <span>→</span>
+            </a>
+
+        </div>
+
+        {% else %}
+
+        <div class="audit-empty">
+
+            <span>ⓘ</span>
+
+            <div>
+
+                <strong>
+                    Audit information unavailable
+                </strong>
+
+                <p>
+                    No audit metadata is currently associated with this
+                    prediction.
+                </p>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =========================================================
+         SAFETY / RESEARCH NOTE
+    ========================================================== -->
+
+    <section class="research-note">
+
+        <div class="research-icon">
+            i
+        </div>
+
+        <div>
+
+            <strong>
+                Research & Safety Note
+            </strong>
+
+            <p>
+                Probabilities, trends, model disagreement and simulations
+                describe the behaviour of this project's machine-learning
+                models. They are not diagnoses, clinical risk calculators,
+                treatment recommendations or proof of causation.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ACTIONS
+    ========================================================== -->
+
+    <div class="p16-actions">
+
+        <a href="{{ url_for('health_profile') }}">
+            <span>←</span>
+            Health Profile
+        </a>
+
+        <a href="{{ url_for('history') }}">
+            Prediction History
+            <span>→</span>
+        </a>
+
+        <a href="{{ url_for('dashboard') }}">
+            Dashboard
+            <span>→</span>
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =============================================================
+     CHART.JS
+============================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const canvas = document.getElementById("trendChart");
+
+    if (!canvas) {
+        return;
+    }
+
+    const labels = {{ trend|map(attribute='date')|list|tojson }};
+
+    const values = {{ trend|map(attribute='probability')|list|tojson }};
+
+    const emptyMessage = document.getElementById("chartEmpty");
+
+
+    if (!values || values.length === 0) {
+
+        canvas.style.display = "none";
+
+        if (emptyMessage) {
+            emptyMessage.style.display = "flex";
+        }
+
+        return;
+    }
+
+
+    new Chart(canvas, {
+
+        type: "line",
+
+        data: {
+
+            labels: labels,
+
+            datasets: [
+
+                {
+
+                    data: values,
+
+                    tension: 0.38,
+
+                    fill: true,
+
+                    borderWidth: 3,
+
+                    pointRadius: 4,
+
+                    pointHoverRadius: 6,
+
+                    borderColor: "#1769aa",
+
+                    backgroundColor: "rgba(23,105,170,0.08)",
+
+                    pointBackgroundColor: "#ffffff",
+
+                    pointBorderColor: "#1769aa",
+
+                    pointBorderWidth: 2
+
+                }
+
+            ]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            interaction: {
+
+                intersect: false,
+
+                mode: "index"
+
+            },
+
+            plugins: {
+
+                legend: {
+                    display: false
+                },
+
+                tooltip: {
+
+                    backgroundColor: "#102f48",
+
+                    padding: 13,
+
+                    titleFont: {
+                        size: 12,
+                        weight: "700"
+                    },
+
+                    bodyFont: {
+                        size: 13,
+                        weight: "600"
+                    },
+
+                    displayColors: false,
+
+                    callbacks: {
+
+                        label: function(context) {
+
+                            return " High-risk probability: "
+                                + Number(context.raw).toFixed(2)
+                                + "%";
+
+                        }
+
+                    }
+
+                }
+
+            },
+
+            scales: {
+
+                y: {
+
+                    beginAtZero: true,
+
+                    max: 100,
+
+                    ticks: {
+
+                        callback: function(value) {
+                            return value + "%";
+                        },
+
+                        color: "#8091a1",
+
+                        font: {
+                            size: 11
+                        }
+
+                    },
+
+                    grid: {
+                        color: "#edf2f6"
+                    }
+
+                },
+
+                x: {
+
+                    ticks: {
+
+                        color: "#8091a1",
+
+                        font: {
+                            size: 10
+                        },
+
+                        maxRotation: 0
+
+                    },
+
+                    grid: {
+                        display: false
+                    }
+
+                }
+
+            }
+
+        }
+
+    });
+
+});
+
+</script>
+
+
+<!-- =============================================================
+     PAGE CSS
+============================================================== -->
+
+<style>
+
+/* =========================================================
+   PAGE FOUNDATION
+========================================================= */
+
+.phase16-page {
+
+    max-width: 1280px;
+
+    color: #17344e;
+
+    padding-bottom: 30px;
+
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.p16-hero {
+
+    position: relative;
+
+    overflow: hidden;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 38px;
+
+    padding: 36px 38px;
+
+    border-radius: 22px;
+
+    background:
+        radial-gradient(
+            circle at 85% 15%,
+            rgba(255,255,255,.13),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #0b3558 0%,
+            #1769aa 70%,
+            #2385c5 100%
+        );
+
+    color: #fff;
+
+    box-shadow:
+        0 16px 38px rgba(13,67,105,.16);
+
+}
+
+
+.p16-hero::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 280px;
+
+    height: 280px;
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    border-radius: 50%;
+
+    right: 260px;
+
+    bottom: -180px;
+
+}
+
+
+.p16-hero-content {
+
+    position: relative;
+
+    z-index: 2;
+
+    flex: 1;
+
+}
+
+
+.p16-kicker {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    font-size: 11px;
+
+    letter-spacing: .13em;
+
+    font-weight: 800;
+
+    opacity: .84;
+
+}
+
+
+.p16-kicker span {
+
+    opacity: .55;
+
+}
+
+
+.p16-hero h1 {
+
+    margin: 10px 0 12px;
+
+    font-size: clamp(2rem, 3vw, 2.55rem);
+
+    line-height: 1.15;
+
+    letter-spacing: -.025em;
+
+    font-weight: 800;
+
+}
+
+
+.p16-hero p {
+
+    max-width: 720px;
+
+    margin: 0;
+
+    font-size: 14px;
+
+    line-height: 1.7;
+
+    color: rgba(255,255,255,.86);
+
+}
+
+
+.p16-hero-tags {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 20px;
+
+}
+
+
+.p16-hero-tags span {
+
+    padding: 7px 11px;
+
+    border-radius: 20px;
+
+    background: rgba(255,255,255,.10);
+
+    border: 1px solid rgba(255,255,255,.14);
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+}
+
+
+.p16-score-card {
+
+    position: relative;
+
+    z-index: 2;
+
+    flex: 0 0 270px;
+
+    padding: 22px;
+
+    border-radius: 18px;
+
+    background: rgba(255,255,255,.105);
+
+    border: 1px solid rgba(255,255,255,.15);
+
+    backdrop-filter: blur(8px);
+
+}
+
+
+.score-top {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+}
+
+
+.score-icon {
+
+    width: 29px;
+
+    height: 29px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: rgba(255,255,255,.13);
+
+    font-size: 14px;
+
+}
+
+
+.score-label {
+
+    color: rgba(255,255,255,.76);
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: .04em;
+
+}
+
+
+.p16-score-card > strong {
+
+    display: block;
+
+    margin: 12px 0 11px;
+
+    font-size: 2.35rem;
+
+    line-height: 1;
+
+    font-weight: 800;
+
+}
+
+
+.score-progress {
+
+    height: 7px;
+
+    overflow: hidden;
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,.16);
+
+}
+
+
+.score-progress span {
+
+    display: block;
+
+    height: 100%;
+
+    border-radius: inherit;
+
+    background: rgba(255,255,255,.9);
+
+}
+
+
+.score-footer {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-top: 13px;
+
+}
+
+
+.score-footer > span {
+
+    font-size: 10px;
+
+    color: rgba(255,255,255,.58);
+
+}
+
+
+.score-footer b {
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+}
+
+
+.risk-high {
+
+    color: #fff;
+
+    background: rgba(220,53,69,.42);
+
+}
+
+
+.risk-low {
+
+    color: #fff;
+
+    background: rgba(25,135,84,.42);
+
+}
+
+
+/* =========================================================
+   QUICK OVERVIEW
+========================================================= */
+
+.p16-overview {
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 16px;
+
+    margin-top: 18px;
+
+}
+
+
+.overview-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    min-height: 78px;
+
+    padding: 14px 16px;
+
+    background: #fff;
+
+    border: 1px solid #e4ebf1;
+
+    border-radius: 14px;
+
+    box-shadow: 0 5px 18px rgba(17,54,84,.045);
+
+}
+
+
+.overview-icon {
+
+    width: 42px;
+
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 11px;
+
+    font-size: 17px;
+
+    font-weight: 900;
+
+}
+
+
+.overview-icon.blue {
+
+    color: #1769aa;
+
+    background: #eaf4fb;
+
+}
+
+
+.overview-icon.purple {
+
+    color: #7256a8;
+
+    background: #f1edfb;
+
+}
+
+
+.overview-icon.green {
+
+    color: #198754;
+
+    background: #e9f7f0;
+
+}
+
+
+.overview-icon.orange {
+
+    color: #b86a12;
+
+    background: #fff4e5;
+
+    font-size: 12px;
+
+}
+
+
+.overview-card small {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #8797a5;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .06em;
+
+    font-weight: 700;
+
+}
+
+
+.overview-card strong {
+
+    display: block;
+
+    color: #17344e;
+
+    font-size: 15px;
+
+    font-weight: 800;
+
+}
+
+
+/* =========================================================
+   MAIN GRID
+========================================================= */
+
+.p16-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 20px;
+
+    margin-top: 20px;
+
+}
+
+
+.p16-card {
+
+    background: #fff;
+
+    border: 1px solid #e1e9f0;
+
+    border-radius: 18px;
+
+    padding: 25px;
+
+    box-shadow: 0 7px 24px rgba(17,54,84,.055);
+
+}
+
+
+.p16-head {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+
+}
+
+
+.section-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+}
+
+
+.section-number {
+
+    width: 39px;
+
+    height: 39px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: #eaf4fb;
+
+    color: #1769aa;
+
+    font-size: 12px;
+
+    font-weight: 900;
+
+}
+
+
+.purple-number {
+
+    background: #f1edfb;
+
+    color: #7256a8;
+
+}
+
+
+.orange-number {
+
+    background: #fff4e5;
+
+    color: #b86a12;
+
+}
+
+
+.green-number {
+
+    background: #e9f7f0;
+
+    color: #198754;
+
+}
+
+
+.section-label {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #8a9aa8;
+
+    font-size: 10px;
+
+    letter-spacing: .1em;
+
+    font-weight: 800;
+
+}
+
+
+.p16-head h3 {
+
+    margin: 0;
+
+    color: #17344e;
+
+    font-size: 19px;
+
+    font-weight: 800;
+
+}
+
+
+.status-pill {
+
+    padding: 7px 11px;
+
+    border-radius: 20px;
+
+    background: #f2f6f9;
+
+    color: #5f7384;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   TREND
+========================================================= */
+
+.trend-summary {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 18px;
+
+    padding: 14px 16px;
+
+    margin-bottom: 15px;
+
+    border: 1px solid #edf1f4;
+
+    border-radius: 11px;
+
+    background: #f9fbfc;
+
+}
+
+
+.trend-summary small {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #8a9aa8;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    font-weight: 700;
+
+}
+
+
+.trend-summary strong {
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+}
+
+
+.trend-summary > span {
+
+    color: #7a8b9a;
+
+    font-size: 11px;
+
+    text-align: right;
+
+}
+
+
+.value-up {
+
+    color: #b45309;
+
+}
+
+
+.value-down {
+
+    color: #198754;
+
+}
+
+
+.value-neutral {
+
+    color: #1769aa;
+
+}
+
+
+.p16-chart {
+
+    position: relative;
+
+    height: 270px;
+
+}
+
+
+.chart-empty {
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    height: 100%;
+
+    color: #8a9aa8;
+
+    font-size: 13px;
+
+}
+
+
+.trend-history {
+
+    margin-top: 13px;
+
+    border-top: 1px solid #edf1f4;
+
+}
+
+
+.history-heading {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 11px 0 7px;
+
+    color: #9aa7b2;
+
+    font-size: 9px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .07em;
+
+    font-weight: 800;
+
+}
+
+
+.trend-history-row {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    min-height: 32px;
+
+    border-bottom: 1px solid #f0f3f5;
+
+}
+
+
+.history-date {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #667a8b;
+
+    font-size: 11px;
+
+}
+
+
+.history-dot {
+
+    width: 7px;
+
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #1769aa;
+
+}
+
+
+.trend-history-row > strong {
+
+    color: #17344e;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+}
+
+
+/* =========================================================
+   ENSEMBLE
+========================================================= */
+
+.agreement-score {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 16px;
+
+    margin-bottom: 19px;
+
+    border-radius: 12px;
+
+    background: linear-gradient(
+        135deg,
+        #f5f9fc,
+        #f8fbfd
+    );
+
+    border: 1px solid #e9eff3;
+
+}
+
+
+.agreement-score small {
+
+    display: block;
+
+    color: #8b9ba9;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    font-weight: 700;
+
+}
+
+
+.agreement-score strong {
+
+    display: block;
+
+    margin-top: 4px;
+
+    color: #17344e;
+
+    font-size: 22px;
+
+    font-weight: 800;
+
+}
+
+
+.agreement-score strong span {
+
+    color: #8b9ba9;
+
+    font-size: 11px;
+
+}
+
+
+.agreement-description {
+
+    max-width: 230px;
+
+    color: #81909d;
+
+    font-size: 11px;
+
+    line-height: 1.55;
+
+    text-align: right;
+
+}
+
+
+.model-row {
+
+    display: grid;
+
+    grid-template-columns: 175px 1fr 65px;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin: 17px 0;
+
+}
+
+
+.model-name {
+
+    color: #263f54;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+}
+
+
+.model-weight {
+
+    margin-top: 4px;
+
+    color: #94a1ac;
+
+    font-size: 10px;
+
+}
+
+
+.model-weight strong {
+
+    color: #1769aa;
+
+}
+
+
+.model-track {
+
+    height: 9px;
+
+    overflow: hidden;
+
+    border-radius: 20px;
+
+    background: #e9eff3;
+
+}
+
+
+.model-track i {
+
+    display: block;
+
+    height: 100%;
+
+    border-radius: inherit;
+
+    background: linear-gradient(
+        90deg,
+        #1769aa,
+        #3b8fc5
+    );
+
+}
+
+
+.model-value {
+
+    color: #17344e;
+
+    font-size: 12px;
+
+    text-align: right;
+
+    font-weight: 800;
+
+}
+
+
+.ensemble-message {
+
+    display: flex;
+
+    gap: 12px;
+
+    margin-top: 20px;
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    background: #f6f9fb;
+
+    border-left: 3px solid #7890a2;
+
+}
+
+
+.message-icon {
+
+    width: 23px;
+
+    height: 23px;
+
+    flex: 0 0 23px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #e6edf2;
+
+    color: #607687;
+
+    font-size: 11px;
+
+    font-weight: 900;
+
+}
+
+
+.ensemble-message strong {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #41596b;
+
+    font-size: 12px;
+
+}
+
+
+.ensemble-message p {
+
+    margin: 0;
+
+    color: #758695;
+
+    font-size: 11px;
+
+    line-height: 1.55;
+
+}
+
+
+/* =========================================================
+   SIMULATOR
+========================================================= */
+
+.simulator-card {
+
+    margin-top: 20px;
+
+}
+
+
+.simulation-badge {
+
+    padding: 7px 11px;
+
+    border-radius: 20px;
+
+    color: #a46218;
+
+    background: #fff5e7;
+
+    font-size: 9px;
+
+    font-weight: 900;
+
+    letter-spacing: .04em;
+
+}
+
+
+.simulator-intro {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 13px;
+
+    padding: 16px;
+
+    margin-bottom: 20px;
+
+    border-radius: 12px;
+
+    background: #f7fafc;
+
+    border: 1px solid #e9eff3;
+
+}
+
+
+.simulator-icon {
+
+    width: 38px;
+
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: #fff0db;
+
+    color: #b86a12;
+
+    font-size: 16px;
+
+}
+
+
+.simulator-intro strong {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #314c61;
+
+    font-size: 13px;
+
+}
+
+
+.simulator-intro p {
+
+    margin: 0;
+
+    color: #7b8c9a;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+
+}
+
+
+.sim-fields {
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 17px;
+
+}
+
+
+.sim-field label {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #425b6e;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+}
+
+
+.sim-field label small {
+
+    margin-left: 3px;
+
+    color: #96a3ae;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+}
+
+
+.sim-field input,
+
+.sim-field select {
+
+    width: 100%;
+
+    height: 44px;
+
+    padding: 9px 12px;
+
+    border: 1px solid #d4dfe7;
+
+    border-radius: 9px;
+
+    outline: none;
+
+    color: #304a5e;
+
+    background: #fff;
+
+    font-size: 13px;
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+
+}
+
+
+.sim-field input:focus,
+
+.sim-field select:focus {
+
+    border-color: #1769aa;
+
+    box-shadow: 0 0 0 3px rgba(23,105,170,.08);
+
+}
+
+
+.simulator-submit {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 18px;
+
+    margin-top: 22px;
+
+    padding-top: 19px;
+
+    border-top: 1px solid #edf1f4;
+
+}
+
+
+.simulator-submit small {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #99a6b1;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: .08em;
+
+}
+
+
+.simulator-submit span {
+
+    color: #8494a1;
+
+    font-size: 11px;
+
+}
+
+
+.p16-btn {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 17px;
+
+    min-height: 42px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    padding: 10px 17px;
+
+    color: #fff;
+
+    background: linear-gradient(
+        135deg,
+        #1769aa,
+        #145c93
+    );
+
+    box-shadow: 0 6px 15px rgba(23,105,170,.16);
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+
+}
+
+
+.p16-btn:hover {
+
+    transform: translateY(-1px);
+
+    box-shadow: 0 8px 18px rgba(23,105,170,.22);
+
+}
+
+
+.p16-btn b {
+
+    font-size: 16px;
+
+}
+
+
+/* =========================================================
+   SIMULATION RESULT
+========================================================= */
+
+.simulation-result {
+
+    display: grid;
+
+    grid-template-columns: 1fr auto 1fr 1fr;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin-top: 22px;
+
+    padding: 17px;
+
+    border: 1px solid #e4ebf0;
+
+    border-radius: 13px;
+
+    background: #f8fafc;
+
+}
+
+
+.sim-result-box {
+
+    padding: 13px 14px;
+
+    border-radius: 10px;
+
+    background: #fff;
+
+    border: 1px solid #e8eef2;
+
+}
+
+
+.sim-result-box.highlighted {
+
+    border-color: #bcd9eb;
+
+    background: #f2f8fc;
+
+}
+
+
+.sim-result-box small,
+
+.sim-delta small {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #8b9ba8;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: .05em;
+
+}
+
+
+.sim-result-box strong,
+
+.sim-delta strong {
+
+    color: #17344e;
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+}
+
+
+.sim-arrow {
+
+    color: #91a0ac;
+
+    font-size: 21px;
+
+}
+
+
+.sim-delta {
+
+    padding: 12px 14px;
+
+}
+
+
+.sim-delta.down strong {
+
+    color: #198754;
+
+}
+
+
+.sim-delta.up strong {
+
+    color: #b45309;
+
+}
+
+
+.sim-delta.neutral strong {
+
+    color: #1769aa;
+
+}
+
+
+.simulation-warning {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    margin-top: 13px;
+
+    padding: 13px 15px;
+
+    border-radius: 9px;
+
+    background: #fff9ef;
+
+    border-left: 3px solid #e0a44c;
+
+}
+
+
+.simulation-warning > span {
+
+    color: #b87921;
+
+    font-size: 14px;
+
+}
+
+
+.simulation-warning strong {
+
+    color: #79521e;
+
+    font-size: 11px;
+
+}
+
+
+.simulation-warning p {
+
+    margin: 4px 0 0;
+
+    color: #8b7658;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+
+}
+
+
+/* =========================================================
+   AUDIT
+========================================================= */
+
+.audit-card {
+
+    margin-top: 20px;
+
+}
+
+
+.audit-status {
+
+    padding: 7px 11px;
+
+    border-radius: 20px;
+
+    color: #198754;
+
+    background: #eaf7f0;
+
+    font-size: 9px;
+
+    font-weight: 900;
+
+}
+
+
+.audit-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 13px;
+
+}
+
+
+.audit-item {
+
+    min-width: 0;
+
+    padding: 16px;
+
+    border: 1px solid #e7edf2;
+
+    border-radius: 10px;
+
+    background: #f9fbfc;
+
+}
+
+
+.audit-item small {
+
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #94a2ae;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: .05em;
+
+}
+
+
+.audit-item strong {
+
+    display: block;
+
+    overflow: hidden;
+
+    color: #29465c;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.audit-footer {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 22px;
+
+    margin-top: 18px;
+
+    padding-top: 18px;
+
+    border-top: 1px solid #edf1f4;
+
+}
+
+
+.audit-footer > div {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+}
+
+
+.audit-lock {
+
+    width: 36px;
+
+    height: 36px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #eef8f3;
+
+    font-size: 14px;
+
+}
+
+
+.audit-footer strong {
+
+    display: block;
+
+    color: #40596b;
+
+    font-size: 12px;
+
+}
+
+
+.audit-footer p {
+
+    margin: 3px 0 0;
+
+    color: #8796a3;
+
+    font-size: 11px;
+
+}
+
+
+.audit-link {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 10px 14px;
+
+    border-radius: 8px;
+
+    text-decoration: none;
+
+    color: #1769aa;
+
+    background: #edf6fc;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+
+}
+
+
+.audit-link:hover {
+
+    background: #e2f0fa;
+
+}
+
+
+.audit-link span {
+
+    font-size: 14px;
+
+}
+
+
+.audit-empty {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 15px;
+
+    border-radius: 9px;
+
+    background: #f7fafc;
+
+}
+
+
+.audit-empty > span {
+
+    color: #1769aa;
+
+}
+
+
+.audit-empty strong {
+
+    font-size: 12px;
+
+}
+
+
+.audit-empty p {
+
+    margin: 3px 0 0;
+
+    color: #82919e;
+
+    font-size: 11px;
+
+}
+
+
+/* =========================================================
+   RESEARCH NOTE
+========================================================= */
+
+.research-note {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 13px;
+
+    margin-top: 20px;
+
+    padding: 17px 19px;
+
+    border: 1px solid #dbe8f1;
+
+    border-radius: 12px;
+
+    background: #f4f9fc;
+
+}
+
+
+.research-icon {
+
+    width: 29px;
+
+    height: 29px;
+
+    flex: 0 0 29px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    color: #1769aa;
+
+    background: #dceef9;
+
+    font-size: 12px;
+
+    font-weight: 900;
+
+}
+
+
+.research-note strong {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #31566f;
+
+    font-size: 12px;
+
+}
+
+
+.research-note p {
+
+    margin: 0;
+
+    color: #6e8393;
+
+    font-size: 11px;
+
+    line-height: 1.65;
+
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.p16-actions {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-top: 18px;
+
+}
+
+
+.p16-actions a {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 10px 14px;
+
+    border: 1px solid #d7e2ea;
+
+    border-radius: 8px;
+
+    color: #3b5d75;
+
+    background: #fff;
+
+    text-decoration: none;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    transition: all .18s ease;
+
+}
+
+
+.p16-actions a:hover {
+
+    color: #1769aa;
+
+    border-color: #b9d2e4;
+
+    background: #f4f9fc;
+
+}
+
+
+.p16-actions a span {
+
+    color: #1769aa;
+
+    font-size: 14px;
+
+}
+
+
+/* =========================================================
+   LARGE TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .phase16-page {
+        max-width: 100%;
+    }
+
+    .p16-overview {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sim-fields {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .audit-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .p16-hero {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+    .p16-score-card {
+
+        width: 100%;
+
+        flex-basis: auto;
+
+    }
+
+    .p16-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .simulation-result {
+
+        grid-template-columns: 1fr 1fr;
+
+    }
+
+    .sim-arrow {
+
+        display: none;
+
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .phase16-page {
+
+        padding-left: 12px;
+
+        padding-right: 12px;
+
+    }
+
+
+    .p16-hero {
+
+        padding: 26px 21px;
+
+        border-radius: 18px;
+
+    }
+
+
+    .p16-kicker {
+
+        font-size: 9px;
+
+        flex-wrap: wrap;
+
+    }
+
+
+    .p16-hero h1 {
+
+        font-size: 1.7rem;
+
+    }
+
+
+    .p16-hero p {
+
+        font-size: 12px;
+
+    }
+
+
+    .p16-hero-tags span {
+
+        font-size: 9px;
+
+        padding: 6px 9px;
+
+    }
+
+
+    .p16-score-card {
+
+        padding: 19px;
+
+    }
+
+
+    .p16-score-card > strong {
+
+        font-size: 2rem;
+
+    }
+
+
+    .p16-overview {
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 10px;
+
+    }
+
+
+    .overview-card {
+
+        min-height: 70px;
+
+        padding: 11px;
+
+        gap: 9px;
+
+    }
+
+
+    .overview-icon {
+
+        width: 35px;
+
+        height: 35px;
+
+        flex-basis: 35px;
+
+        font-size: 14px;
+
+    }
+
+
+    .overview-card small {
+
+        font-size: 8px;
+
+    }
+
+
+    .overview-card strong {
+
+        font-size: 13px;
+
+    }
+
+
+    .p16-card {
+
+        padding: 18px;
+
+        border-radius: 15px;
+
+    }
+
+
+    .p16-head {
+
+        align-items: flex-start;
+
+    }
+
+
+    .section-title {
+
+        gap: 9px;
+
+    }
+
+
+    .section-number {
+
+        width: 34px;
+
+        height: 34px;
+
+        flex-basis: 34px;
+
+        font-size: 10px;
+
+    }
+
+
+    .section-label {
+
+        font-size: 8px;
+
+    }
+
+
+    .p16-head h3 {
+
+        font-size: 17px;
+
+    }
+
+
+    .status-pill,
+
+    .simulation-badge,
+
+    .audit-status {
+
+        font-size: 8px;
+
+        padding: 6px 8px;
+
+    }
+
+
+    .p16-chart {
+
+        height: 230px;
+
+    }
+
+
+    .model-row {
+
+        grid-template-columns: 115px 1fr 55px;
+
+        gap: 8px;
+
+    }
+
+
+    .model-name {
+
+        font-size: 11px;
+
+    }
+
+
+    .model-weight {
+
+        font-size: 8px;
+
+    }
+
+
+    .model-value {
+
+        font-size: 10px;
+
+    }
+
+
+    .sim-fields {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .simulator-submit {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+
+    .p16-btn {
+
+        width: 100%;
+
+        justify-content: center;
+
+    }
+
+
+    .simulation-result {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .sim-arrow {
+
+        display: none;
+
+    }
+
+
+    .audit-grid {
+
+        grid-template-columns: 1fr 1fr;
+
+    }
+
+
+    .audit-footer {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+
+    .audit-link {
+
+        width: 100%;
+
+        justify-content: center;
+
+    }
+
+
+    .p16-actions {
+
+        display: grid;
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .p16-actions a {
+
+        justify-content: center;
+
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 430px) {
+
+    .p16-overview {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .audit-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .trend-summary {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+
+    .trend-summary > span {
+
+        text-align: left;
+
+    }
+
+
+    .agreement-score {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+
+    .agreement-description {
+
+        max-width: none;
+
+        text-align: left;
+
+    }
+
+
+    .model-row {
+
+        grid-template-columns: 100px 1fr 48px;
+
+    }
+
+
+    .research-note {
+
+        padding: 14px;
+
+    }
+
+}
+
+</style>
+
+{% endblock %}

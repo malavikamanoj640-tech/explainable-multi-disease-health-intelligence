@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}Page Not Found | AI Health Risk Assessment{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 text-center p-5">
+                <div style="font-size: 64px;">🔎</div>
+                <h1 class="fw-bold mt-3">Page Not Found</h1>
+                <p class="text-muted mt-3">
+                    The page you are looking for does not exist or the URL may be incorrect.
+                </p>
+                <div class="mt-4">
+                    <a href="{{ url_for('home') }}" class="btn btn-primary px-4">Go to Home</a>
+                    {% if session.get('user_id') %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary px-4 ms-2">Dashboard</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

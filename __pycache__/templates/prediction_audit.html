@@ -1,0 +1,1526 @@
+{% extends "layout.html" %}
+
+{% block title %}Prediction Audit Record{% endblock %}
+
+{% block content %}
+
+<div class="container py-4 audit-page">
+
+    <!-- =========================================================
+         HERO
+    ========================================================== -->
+
+    <section class="audit-hero">
+
+        <div class="audit-hero-main">
+
+            <div class="audit-kicker">
+                MODEL GOVERNANCE
+                <span>•</span>
+                TRACEABILITY
+                <span>•</span>
+                REPRODUCIBILITY
+            </div>
+
+            <h1>
+                Prediction Audit Record
+            </h1>
+
+            <p>
+                A reproducibility snapshot for assessment
+                <strong>#{{ assessment.id }}</strong>.
+                This record documents the model configuration,
+                dataset reference and input values used for the
+                saved prediction.
+            </p>
+
+            <div class="hero-badges">
+
+                <span>
+                    ✓ Saved Record
+                </span>
+
+                <span>
+                    ✓ Traceable
+                </span>
+
+                <span>
+                    Research Use
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="audit-score">
+
+            <div class="score-label">
+                HIGH-RISK PROBABILITY
+            </div>
+
+            <strong>
+                {{ '%.2f'|format(assessment.probability) }}%
+            </strong>
+
+            <div class="score-track">
+
+                <span
+                    style="width: {{ assessment.probability }}%"
+                ></span>
+
+            </div>
+
+            <div class="score-status">
+
+                <span>
+                    Saved prediction
+                </span>
+
+                <b class="
+                    {% if 'high' in assessment.prediction|lower %}
+                        high
+                    {% else %}
+                        low
+                    {% endif %}
+                ">
+                    {{ assessment.prediction }}
+                </b>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         QUICK AUDIT SUMMARY
+    ========================================================== -->
+
+    <section class="audit-summary">
+
+        <div class="summary-card">
+
+            <div class="summary-icon blue">
+                ◉
+            </div>
+
+            <div>
+
+                <small>
+                    DISEASE
+                </small>
+
+                <strong>
+                    {{ assessment.disease }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon green">
+                ✓
+            </div>
+
+            <div>
+
+                <small>
+                    PREDICTION
+                </small>
+
+                <strong>
+                    {{ assessment.prediction }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon purple">
+                #
+            </div>
+
+            <div>
+
+                <small>
+                    PREDICTION ID
+                </small>
+
+                <strong>
+                    #{{ assessment.id }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon orange">
+                ◷
+            </div>
+
+            <div>
+
+                <small>
+                    ASSESSMENT DATE
+                </small>
+
+                <strong>
+                    {{ assessment.date }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ASSESSMENT + MODEL
+    ========================================================== -->
+
+    <div class="audit-columns">
+
+
+        <!-- =====================================================
+             ASSESSMENT DETAILS
+        ====================================================== -->
+
+        <section class="audit-card">
+
+            <div class="card-heading">
+
+                <div class="heading-icon blue">
+                    01
+                </div>
+
+                <div>
+
+                    <span>
+                        ASSESSMENT TRACE
+                    </span>
+
+                    <h2>
+                        Assessment Details
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-list">
+
+                <div class="detail-row">
+
+                    <span>
+                        Disease
+                    </span>
+
+                    <strong>
+                        {{ assessment.disease }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>
+                        Saved prediction
+                    </span>
+
+                    <strong>
+                        <span class="prediction-badge
+                            {% if 'high' in assessment.prediction|lower %}
+                                high
+                            {% else %}
+                                low
+                            {% endif %}
+                        ">
+                            {{ assessment.prediction }}
+                        </span>
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>
+                        High-risk probability
+                    </span>
+
+                    <strong>
+                        {{ '%.2f'|format(assessment.probability) }}%
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>
+                        Assessment date
+                    </span>
+
+                    <strong>
+                        {{ assessment.date }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>
+                        Prediction ID
+                    </span>
+
+                    <strong>
+                        #{{ assessment.id }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             MODEL DETAILS
+        ====================================================== -->
+
+        <section class="audit-card">
+
+            <div class="card-heading">
+
+                <div class="heading-icon purple">
+                    02
+                </div>
+
+                <div>
+
+                    <span>
+                        MODEL TRACE
+                    </span>
+
+                    <h2>
+                        Model Configuration
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-list">
+
+                <div class="detail-row">
+
+                    <span>
+                        Model
+                    </span>
+
+                    <strong>
+                        {{ audit.model_name }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>
+                        Model version
+                    </span>
+
+                    <strong class="version-value">
+                        {{ audit.model_version }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>
+                        Model artifact
+                    </span>
+
+                    <strong class="break-value">
+                        {{ audit.model_file }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>
+                        Dataset reference
+                    </span>
+
+                    <strong class="break-value">
+                        {{ audit.dataset_reference }}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <span>
+                        Decision threshold
+                    </span>
+
+                    <strong>
+                        {{ '%.2f'|format(audit.decision_threshold) }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- =========================================================
+         INPUT SNAPSHOT
+    ========================================================== -->
+
+    <section class="audit-card input-card">
+
+        <div class="card-heading">
+
+            <div class="heading-icon orange">
+                03
+            </div>
+
+            <div>
+
+                <span>
+                    INPUT TRACE
+                </span>
+
+                <h2>
+                    Input Snapshot
+                </h2>
+
+                <p>
+                    Exact feature values associated with this saved
+                    prediction.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="input-grid">
+
+            {% for key,value in assessment.inputs.items() %}
+
+            <div class="input-item">
+
+                <div class="input-label">
+
+                    {{ key
+                        |replace('_',' ')
+                        |title
+                    }}
+
+                </div>
+
+                <strong>
+                    {{ value }}
+                </strong>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         REPRODUCIBILITY
+    ========================================================== -->
+
+    <section class="repro-card">
+
+        <div class="repro-icon">
+            ✓
+        </div>
+
+        <div class="repro-content">
+
+            <span>
+                RESEARCH TRACEABILITY
+            </span>
+
+            <h3>
+                Reproducibility Snapshot
+            </h3>
+
+            <p>
+                This audit record connects the saved prediction with
+                its model version, dataset reference, decision
+                threshold and input values. This structure helps
+                reproduce and investigate model behaviour during
+                project evaluation and research review.
+            </p>
+
+        </div>
+
+        <div class="repro-status">
+
+            <strong>
+                TRACEABLE
+            </strong>
+
+            <span>
+                Assessment #{{ assessment.id }}
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         RESEARCH NOTE
+    ========================================================== -->
+
+    <section class="research-note">
+
+        <div class="research-icon">
+            i
+        </div>
+
+        <div>
+
+            <strong>
+                Research & Safety Note
+            </strong>
+
+            <p>
+                Model versioning improves traceability and
+                reproducibility within this project. This audit
+                record documents machine-learning processing and
+                does not certify clinical validity, medical
+                diagnosis, treatment effectiveness or regulatory
+                approval.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         ACTIONS
+    ========================================================== -->
+
+    <div class="audit-actions">
+
+        <a
+            href="{{ url_for('advanced_intelligence', prediction_id=assessment.id) }}"
+            class="primary-action"
+        >
+            <span>↗</span>
+            Advanced Intelligence
+        </a>
+
+
+        <a href="{{ url_for('history') }}">
+            <span>☷</span>
+            Prediction History
+        </a>
+
+
+        <a href="{{ url_for('dashboard') }}">
+            <span>⌂</span>
+            Dashboard
+        </a>
+
+    </div>
+
+</div>
+
+
+<style>
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.audit-page {
+    max-width: 1200px;
+    color: #17344e;
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.audit-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 34px 36px;
+    color: #fff;
+    border-radius: 21px;
+
+    background:
+        radial-gradient(
+            circle at 85% 15%,
+            rgba(255,255,255,.12),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #0b3558,
+            #1769aa
+        );
+
+    box-shadow:
+        0 15px 35px rgba(13,67,105,.15);
+}
+
+
+.audit-hero-main {
+    max-width: 760px;
+}
+
+
+.audit-kicker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 9px;
+
+    font-size: 11px;
+    letter-spacing: .13em;
+    font-weight: 800;
+    opacity: .8;
+}
+
+
+.audit-kicker span {
+    opacity: .45;
+}
+
+
+.audit-hero h1 {
+    margin: 0 0 11px;
+
+    font-size: clamp(
+        2rem,
+        3vw,
+        2.45rem
+    );
+
+    line-height: 1.15;
+    font-weight: 750;
+    letter-spacing: -.02em;
+}
+
+
+.audit-hero p {
+    margin: 0;
+    max-width: 710px;
+
+    color: rgba(255,255,255,.84);
+
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+
+.audit-hero p strong {
+    color: #fff;
+}
+
+
+.hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 19px;
+}
+
+
+.hero-badges span {
+    padding: 7px 11px;
+
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 20px;
+
+    background: rgba(255,255,255,.09);
+    color: rgba(255,255,255,.88);
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   SCORE CARD
+========================================================= */
+
+.audit-score {
+    flex: 0 0 245px;
+
+    padding: 21px;
+
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 17px;
+
+    background: rgba(255,255,255,.10);
+
+    backdrop-filter: blur(8px);
+}
+
+
+.score-label {
+    color: rgba(255,255,255,.68);
+
+    font-size: 10px;
+    letter-spacing: .08em;
+    font-weight: 800;
+}
+
+
+.audit-score > strong {
+    display: block;
+    margin: 9px 0;
+
+    color: #fff;
+
+    font-size: 2.35rem;
+    line-height: 1;
+}
+
+
+.score-track {
+    height: 6px;
+    overflow: hidden;
+
+    border-radius: 20px;
+    background: rgba(255,255,255,.16);
+}
+
+
+.score-track span {
+    display: block;
+    height: 100%;
+
+    border-radius: inherit;
+    background: rgba(255,255,255,.92);
+}
+
+
+.score-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    margin-top: 12px;
+}
+
+
+.score-status > span {
+    color: rgba(255,255,255,.6);
+    font-size: 11px;
+}
+
+
+.score-status b {
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    color: #fff;
+    font-size: 11px;
+}
+
+
+.score-status b.high {
+    background: rgba(220,53,69,.42);
+}
+
+
+.score-status b.low {
+    background: rgba(25,135,84,.42);
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.audit-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 14px;
+    margin-top: 18px;
+}
+
+
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    min-height: 76px;
+    padding: 13px 15px;
+
+    border: 1px solid #e2eaf0;
+    border-radius: 13px;
+
+    background: #fff;
+
+    box-shadow:
+        0 5px 18px rgba(17,54,84,.035);
+}
+
+
+.summary-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    font-size: 14px;
+    font-weight: 900;
+}
+
+
+.summary-icon.blue {
+    color: #1769aa;
+    background: #eaf4fb;
+}
+
+
+.summary-icon.green {
+    color: #198754;
+    background: #e9f7f0;
+}
+
+
+.summary-icon.purple {
+    color: #7256a8;
+    background: #f1edfb;
+}
+
+
+.summary-icon.orange {
+    color: #b86a12;
+    background: #fff3e2;
+}
+
+
+.summary-card small {
+    display: block;
+    margin-bottom: 4px;
+
+    color: #91a0ac;
+
+    font-size: 10px;
+    letter-spacing: .07em;
+    font-weight: 800;
+}
+
+
+.summary-card strong {
+    display: block;
+
+    overflow: hidden;
+
+    color: #29475d;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   COLUMNS
+========================================================= */
+
+.audit-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 19px;
+    margin-top: 19px;
+}
+
+
+.audit-card {
+    padding: 24px;
+
+    border: 1px solid #e1e9f0;
+    border-radius: 17px;
+
+    background: #fff;
+
+    box-shadow:
+        0 7px 23px rgba(17,54,84,.045);
+}
+
+
+/* =========================================================
+   CARD HEADING
+========================================================= */
+
+.card-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 19px;
+}
+
+
+.heading-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+
+.heading-icon.blue {
+    color: #1769aa;
+    background: #eaf4fb;
+}
+
+
+.heading-icon.purple {
+    color: #7256a8;
+    background: #f1edfb;
+}
+
+
+.heading-icon.orange {
+    color: #b86a12;
+    background: #fff3e2;
+}
+
+
+.card-heading span {
+    display: block;
+    margin-bottom: 3px;
+
+    color: #91a0ac;
+
+    font-size: 10px;
+    letter-spacing: .1em;
+    font-weight: 800;
+}
+
+
+.card-heading h2 {
+    margin: 0;
+
+    color: #17344e;
+
+    font-size: 20px;
+    line-height: 1.25;
+    font-weight: 700;
+}
+
+
+.card-heading p {
+    margin: 5px 0 0;
+
+    color: #82929f;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   DETAIL LIST
+========================================================= */
+
+.detail-list {
+    border-top: 1px solid #edf1f4;
+}
+
+
+.detail-row {
+    display: grid;
+
+    grid-template-columns: 170px 1fr;
+
+    gap: 15px;
+
+    align-items: center;
+
+    min-height: 48px;
+
+    border-bottom: 1px solid #edf1f4;
+}
+
+
+.detail-row > span {
+    color: #81919f;
+    font-size: 13px;
+}
+
+
+.detail-row > strong {
+    color: #29475d;
+
+    font-size: 14px;
+    font-weight: 650;
+
+    text-align: right;
+}
+
+
+.break-value {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+.version-value {
+    color: #1769aa !important;
+}
+
+
+.prediction-badge {
+    display: inline-block;
+
+    padding: 6px 10px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+.prediction-badge.high {
+    color: #a12c3b;
+    background: #fdecef;
+}
+
+
+.prediction-badge.low {
+    color: #19734b;
+    background: #eaf7f0;
+}
+
+
+/* =========================================================
+   INPUT SNAPSHOT
+========================================================= */
+
+.input-card {
+    margin-top: 19px;
+}
+
+
+.input-grid {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 12px;
+}
+
+
+.input-item {
+    min-height: 70px;
+
+    padding: 12px 13px;
+
+    border: 1px solid #e7edf2;
+    border-radius: 10px;
+
+    background: #f9fbfc;
+
+    transition:
+        border-color .18s ease,
+        transform .18s ease;
+}
+
+
+.input-item:hover {
+    border-color: #c9dce9;
+    transform: translateY(-1px);
+}
+
+
+.input-label {
+    margin-bottom: 7px;
+
+    color: #8b9aa6;
+
+    font-size: 11px;
+    line-height: 1.35;
+
+    text-transform: capitalize;
+}
+
+
+.input-item strong {
+    display: block;
+
+    overflow-wrap: anywhere;
+
+    color: #29475d;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   REPRODUCIBILITY
+========================================================= */
+
+.repro-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    margin-top: 19px;
+    padding: 19px;
+
+    border: 1px solid #dce9f1;
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f3f9fc,
+            #f8fbfd
+        );
+}
+
+
+.repro-icon {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    color: #198754;
+    background: #e6f6ee;
+
+    font-size: 18px;
+    font-weight: 900;
+}
+
+
+.repro-content {
+    flex: 1;
+}
+
+
+.repro-content > span {
+    display: block;
+    margin-bottom: 4px;
+
+    color: #7c9aab;
+
+    font-size: 10px;
+    letter-spacing: .1em;
+    font-weight: 800;
+}
+
+
+.repro-content h3 {
+    margin: 0 0 5px;
+
+    color: #294b61;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+
+.repro-content p {
+    max-width: 760px;
+
+    margin: 0;
+
+    color: #738694;
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+.repro-status {
+    flex: 0 0 auto;
+
+    text-align: right;
+}
+
+
+.repro-status strong {
+    display: block;
+
+    color: #198754;
+
+    font-size: 11px;
+    letter-spacing: .06em;
+}
+
+
+.repro-status span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #91a0ac;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   RESEARCH NOTE
+========================================================= */
+
+.research-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    margin-top: 16px;
+    padding: 15px 17px;
+
+    border: 1px solid #dce8f0;
+    border-left: 3px solid #1769aa;
+    border-radius: 11px;
+
+    background: #f5f9fc;
+}
+
+
+.research-icon {
+    width: 25px;
+    height: 25px;
+    flex: 0 0 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    color: #1769aa;
+    background: #deeff9;
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+
+.research-note strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #36566b;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.research-note p {
+    margin: 0;
+
+    color: #718493;
+
+    font-size: 12.5px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.audit-actions {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-top: 17px;
+    margin-bottom: 10px;
+}
+
+
+.audit-actions a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 11px 15px;
+
+    border: 1px solid #d4e0e8;
+    border-radius: 9px;
+
+    color: #3c5d74;
+    background: #fff;
+
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 750;
+
+    transition: all .18s ease;
+}
+
+
+.audit-actions a:hover {
+    color: #1769aa;
+
+    border-color: #b8d2e4;
+
+    background: #f3f9fc;
+}
+
+
+.audit-actions a span {
+    color: #1769aa;
+    font-size: 14px;
+}
+
+
+.audit-actions .primary-action {
+    color: #fff;
+
+    border-color: #1769aa;
+
+    background: #1769aa;
+
+    box-shadow:
+        0 5px 14px rgba(23,105,170,.15);
+}
+
+
+.audit-actions .primary-action span {
+    color: #fff;
+}
+
+
+.audit-actions .primary-action:hover {
+    color: #fff;
+
+    background: #125c91;
+
+    border-color: #125c91;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+
+    .audit-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .input-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+}
+
+
+/* =========================================================
+   TABLET / SMALL LAPTOP
+========================================================= */
+
+@media (max-width: 850px) {
+
+    .audit-hero {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .audit-score {
+        flex-basis: auto;
+        width: 100%;
+    }
+
+    .audit-columns {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .audit-page {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .audit-hero {
+        padding: 25px 21px;
+        border-radius: 17px;
+    }
+
+    .audit-hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .audit-hero p {
+        font-size: 13.5px;
+    }
+
+    .audit-kicker {
+        font-size: 9px;
+    }
+
+    .audit-summary {
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+    }
+
+    .summary-card {
+        min-height: 68px;
+        padding: 10px;
+    }
+
+    .summary-icon {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+    }
+
+    .summary-card small {
+        font-size: 9px;
+    }
+
+    .summary-card strong {
+        font-size: 12px;
+    }
+
+    .audit-card {
+        padding: 18px;
+    }
+
+    .input-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .detail-row {
+        grid-template-columns: 125px 1fr;
+    }
+
+    .repro-card {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .repro-status {
+        width: 100%;
+        padding-left: 59px;
+        text-align: left;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 430px) {
+
+    .audit-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding: 10px 0;
+    }
+
+    .detail-row > strong {
+        text-align: left;
+    }
+
+    .audit-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .audit-actions a {
+        justify-content: center;
+    }
+
+}
+
+</style>
+
+{% endblock %}

@@ -1,0 +1,3678 @@
+{% extends "layout.html" %}
+
+{% block title %}Healthcare Locator | HealthAI{% endblock %}
+
+{% block content %}
+
+<!-- =========================================================
+     LEAFLET
+========================================================= -->
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<style>
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.healthcare-page {
+    min-height: calc(100vh - 70px);
+    background:
+        radial-gradient(
+            circle at 10% 20%,
+            rgba(13,110,253,0.07),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(20,184,166,0.07),
+            transparent 30%
+        ),
+        #f6f9fc;
+
+    padding: 35px;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.healthcare-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.healthcare-title h1 {
+    color: #12233f;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 6px;
+}
+
+.healthcare-title p {
+    color: #718096;
+    font-size: 14px;
+    margin: 0;
+}
+
+.location-btn {
+    border: none;
+    background: #0d6efd;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.location-btn:hover {
+    background: #0b5ed7;
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   LOCATION STATUS
+========================================================= */
+
+.location-status {
+    display: none;
+    background: #fff;
+    border-radius: 14px;
+    padding: 15px 18px;
+    margin-bottom: 22px;
+    box-shadow: 0 7px 22px rgba(31,45,61,.05);
+    border-left: 4px solid #0d6efd;
+}
+
+.location-status.success {
+    border-left-color: #198754;
+}
+
+.location-status.warning {
+    border-left-color: #f59e0b;
+}
+
+.location-status.error {
+    border-left-color: #dc3545;
+}
+
+.location-status strong {
+    color: #172b4d;
+    font-size: 13px;
+}
+
+.location-status span {
+    display: block;
+    color: #718096;
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+
+/* =========================================================
+   FEATURE CARDS
+========================================================= */
+
+.healthcare-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.healthcare-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 28px rgba(31,45,61,.06);
+    border: 1px solid rgba(0,0,0,.04);
+    transition: .3s;
+}
+
+.healthcare-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 35px rgba(31,45,61,.10);
+}
+
+.healthcare-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 27px;
+    margin-bottom: 17px;
+}
+
+.doctor-icon {
+    background: #eaf3ff;
+}
+
+.hospital-icon {
+    background: #eafaf5;
+}
+
+.emergency-icon {
+    background: #fff0f1;
+}
+
+.healthcare-card h3 {
+    color: #172b4d;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.healthcare-card p {
+    color: #7b8794;
+    font-size: 12px;
+    line-height: 1.7;
+    min-height: 42px;
+}
+
+.healthcare-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 9px 15px;
+    border-radius: 9px;
+    background: #eef5ff;
+    color: #0d6efd;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.healthcare-link:hover {
+    background: #dceaff;
+    color: #0b5ed7;
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.search-section {
+    background: #fff;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 28px rgba(31,45,61,.06);
+    margin-bottom: 30px;
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.section-title h2 {
+    color: #172b4d;
+    font-size: 19px;
+    margin: 0;
+}
+
+.section-title span {
+    color: #8a94a6;
+    font-size: 11px;
+}
+
+.search-controls {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+}
+
+.search-input {
+    width: 100%;
+    border: 1px solid #dce5ee;
+    border-radius: 10px;
+    padding: 12px 15px;
+    outline: none;
+    font-size: 13px;
+}
+
+.search-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13,110,253,.08);
+}
+
+.search-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 22px;
+    background: #0d6efd;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.live-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
+    margin-top: 15px;
+    align-items: end;
+}
+
+.live-control-group label {
+    display: block;
+    color: #53657d;
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.live-select {
+    width: 100%;
+    border: 1px solid #dce5ee;
+    border-radius: 10px;
+    padding: 11px 12px;
+    background: #fff;
+    color: #172b4d;
+    font-size: 12px;
+}
+
+.refresh-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 11px 16px;
+    background: #eaf7f2;
+    color: #13795b;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.live-data-note {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f5f9fd;
+    border: 1px solid #e3edf6;
+    color: #718096;
+    font-size: 10px;
+}
+
+.live-data-note .live {
+    color: #13795b;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   MAP
+========================================================= */
+
+.map-section {
+    background: #fff;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 28px rgba(31,45,61,.06);
+    margin-bottom: 30px;
+}
+
+.map-container {
+    width: 100%;
+    height: 430px;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #dce5ee;
+}
+
+#healthcareMap {
+    width: 100%;
+    height: 100%;
+}
+
+.map-loading {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #718096;
+}
+
+
+/* =========================================================
+   MAP CONTROLS
+========================================================= */
+
+.map-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.map-control-btn {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.map-control-btn.hospital {
+    background: #eafaf5;
+    color: #198754;
+}
+
+.map-control-btn.doctor {
+    background: #eaf3ff;
+    color: #0d6efd;
+}
+
+.map-control-btn.maps {
+    background: #0d6efd;
+    color: #fff;
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   RESULTS
+========================================================= */
+
+.results-section {
+    display: none;
+    background: #fff;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 28px rgba(31,45,61,.06);
+    margin-bottom: 30px;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.results-header h2 {
+    margin: 0;
+    color: #172b4d;
+    font-size: 19px;
+}
+
+.results-count {
+    color: #8a94a6;
+    font-size: 11px;
+}
+
+.facility-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.facility-card {
+    border: 1px solid #e4ebf3;
+    border-radius: 14px;
+    padding: 17px;
+    transition: .25s;
+}
+
+.facility-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(31,45,61,.08);
+}
+
+.facility-name {
+    color: #172b4d;
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.facility-type {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    background: #eef5ff;
+    color: #0d6efd;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.facility-address,
+.facility-distance {
+    color: #718096;
+    font-size: 11px;
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+.facility-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 13px;
+}
+
+.facility-btn {
+    text-decoration: none;
+    padding: 7px 11px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.facility-btn.primary {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.facility-btn.secondary {
+    background: #eef5ff;
+    color: #0d6efd;
+}
+
+.facility-btn.call {
+    background: #eaf7f2;
+    color: #13795b;
+}
+
+
+/* =========================================================
+   STATES
+========================================================= */
+
+.healthcare-loading,
+.no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    color: #718096;
+}
+
+.state-icon {
+    font-size: 38px;
+    margin-bottom: 10px;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #dce5ee;
+    border-top-color: #0d6efd;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   INNOVATION
+========================================================= */
+
+.innovation-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(
+        135deg,
+        #102a43,
+        #163f63
+    );
+    border-radius: 20px;
+    padding: 28px;
+    color: #fff;
+    margin-bottom: 30px;
+}
+
+.innovation-content h2 {
+    color: #fff;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.innovation-content p {
+    color: rgba(255,255,255,.78);
+    font-size: 12px;
+    line-height: 1.7;
+    max-width: 700px;
+}
+
+.innovation-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.innovation-feature {
+    background: rgba(255,255,255,.09);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   EMERGENCY
+========================================================= */
+
+.emergency-section {
+    background: #fff5f5;
+    border: 1px solid #ffd6d6;
+    border-radius: 18px;
+    padding: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.emergency-section h3 {
+    color: #842029;
+    font-size: 17px;
+    margin-bottom: 5px;
+}
+
+.emergency-section p {
+    color: #8a4a50;
+    font-size: 11px;
+    margin: 0;
+}
+
+.emergency-btn {
+    background: #dc3545;
+    color: #fff;
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .healthcare-page {
+        padding: 20px;
+    }
+
+    .healthcare-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .facility-list {
+        grid-template-columns: 1fr;
+    }
+
+    .live-controls {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .healthcare-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .search-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .section-title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .emergency-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .map-container {
+        height: 350px;
+    }
+}
+
+</style>
+
+
+<!-- =========================================================
+     PAGE
+========================================================= -->
+
+<div class="healthcare-page">
+
+
+    <!-- HEADER -->
+
+    <div class="healthcare-header">
+
+        <div class="healthcare-title">
+
+            <h1>🏥 Healthcare Locator</h1>
+
+            <p>
+                Find nearby doctors, hospitals and healthcare services.
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            class="location-btn"
+            onclick="getUserLocation()">
+
+            📍 Use My Location
+
+        </button>
+
+    </div>
+
+
+    <!-- LOCATION STATUS -->
+
+    <div
+        id="locationStatus"
+        class="location-status">
+
+        <strong id="locationTitle">
+            Location
+        </strong>
+
+        <span id="locationDetails">
+            Ready to search.
+        </span>
+
+    </div>
+
+
+    <!-- =====================================================
+         FEATURE CARDS
+    ====================================================== -->
+
+    <div class="healthcare-grid">
+
+
+        <div class="healthcare-card">
+
+            <div class="healthcare-icon doctor-icon">
+                👨‍⚕️
+            </div>
+
+            <h3>
+                Nearby Doctors
+            </h3>
+
+            <p>
+                Find doctors, clinics and medical centres
+                around your current location.
+            </p>
+
+            <a
+                href="#map"
+                class="healthcare-link"
+                onclick="findNearbyDoctors(); return false;">
+
+                Find Doctors →
+
+            </a>
+
+        </div>
+
+
+        <div class="healthcare-card">
+
+            <div class="healthcare-icon hospital-icon">
+                🏥
+            </div>
+
+            <h3>
+                Nearby Hospitals
+            </h3>
+
+            <p>
+                Locate hospitals and healthcare facilities
+                close to your current location.
+            </p>
+
+            <a
+                href="#map"
+                class="healthcare-link"
+                onclick="findNearbyHospitals(); return false;">
+
+                Find Hospitals →
+
+            </a>
+
+        </div>
+
+
+        <div class="healthcare-card">
+
+            <div class="healthcare-icon emergency-icon">
+                🚨
+            </div>
+
+            <h3>
+                Emergency Care
+            </h3>
+
+            <p>
+                Quickly search for nearby emergency hospitals
+                when urgent medical attention is required.
+            </p>
+
+            <a
+                href="#map"
+                class="healthcare-link"
+                onclick="openEmergencyHospitals(); return false;">
+
+                Emergency Help →
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SEARCH
+    ====================================================== -->
+
+    <div class="search-section">
+
+        <div class="section-title">
+
+            <h2>
+                🔎 Search Healthcare Facilities
+            </h2>
+
+            <span>
+                Search by location or facility
+            </span>
+
+        </div>
+
+
+        <div class="search-controls">
+
+            <input
+                type="text"
+                id="locationSearch"
+                class="search-input"
+                placeholder="Enter city, area or hospital name..."
+            >
+
+            <button
+                type="button"
+                class="search-btn"
+                onclick="searchLocation()">
+
+                Search
+
+            </button>
+
+        </div>
+
+
+        <div class="live-controls">
+
+            <div class="live-control-group">
+
+                <label for="facilityType">
+                    Facility Type
+                </label>
+
+                <select
+                    id="facilityType"
+                    class="live-select">
+
+                    <option value="all">
+                        All Healthcare
+                    </option>
+
+                    <option value="hospital">
+                        Hospitals
+                    </option>
+
+                    <option value="doctor">
+                        Doctors & Clinics
+                    </option>
+
+                    <option value="pharmacy">
+                        Pharmacies
+                    </option>
+
+                    <option value="laboratory">
+                        Diagnostic Labs
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="live-control-group">
+
+                <label for="searchRadius">
+                    Search Radius
+                </label>
+
+                <select
+                    id="searchRadius"
+                    class="live-select">
+
+                    <option value="2000">
+                        2 km
+                    </option>
+
+                    <option
+                        value="5000"
+                        selected>
+
+                        5 km
+
+                    </option>
+
+                    <option value="10000">
+                        10 km
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="refresh-btn"
+                onclick="refreshHealthcareResults()">
+
+                🔄 Refresh Live Results
+
+            </button>
+
+        </div>
+
+
+        <div class="live-data-note">
+
+            <span class="live">
+                🟢 Live lookup
+            </span>
+
+            <span id="lastUpdated">
+                No search performed yet
+            </span>
+
+            <span>
+                Data comes from OpenStreetMap contributors.
+                Availability of doctors, beds and emergency services
+                is not guaranteed.
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAP
+    ====================================================== -->
+
+    <div
+        id="map"
+        class="map-section">
+
+        <div class="section-title">
+
+            <h2>
+                🗺️ Healthcare Map
+            </h2>
+
+            <span>
+                Nearby healthcare facilities
+            </span>
+
+        </div>
+
+
+        <div
+            id="mapContainer"
+            class="map-container">
+
+            <div id="healthcareMap"></div>
+
+        </div>
+
+
+        <div
+            id="mapControls"
+            class="map-controls">
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RESULTS
+    ====================================================== -->
+
+    <div
+        id="resultsSection"
+        class="results-section">
+
+        <div class="results-header">
+
+            <h2>
+                🏥 Nearby Healthcare Facilities
+            </h2>
+
+            <span
+                id="resultsCount"
+                class="results-count">
+
+                0 facilities
+
+            </span>
+
+        </div>
+
+
+        <div
+            id="facilityList"
+            class="facility-list">
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         INNOVATION
+    ====================================================== -->
+
+    <div class="innovation-card">
+
+        <div class="innovation-content">
+
+            <h2>
+                🤖 Smart Healthcare Guidance
+            </h2>
+
+            <p>
+                HealthAI connects AI-assisted health risk
+                assessment with real-world healthcare access.
+                The locator helps users discover nearby
+                healthcare resources while keeping final
+                medical decisions with qualified professionals.
+            </p>
+
+
+            <div class="innovation-features">
+
+                <span class="innovation-feature">
+                    📊 Risk-Based Guidance
+                </span>
+
+                <span class="innovation-feature">
+                    📍 Location-Aware Search
+                </span>
+
+                <span class="innovation-feature">
+                    🏥 Hospital Discovery
+                </span>
+
+                <span class="innovation-feature">
+                    👨‍⚕️ Doctor Discovery
+                </span>
+
+                <span class="innovation-feature">
+                    🚗 Navigation Support
+                </span>
+
+                <span class="innovation-feature">
+                    🚨 Emergency Assistance
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         EMERGENCY
+    ====================================================== -->
+
+    <div
+        id="emergency"
+        class="emergency-section">
+
+        <div>
+
+            <h3>
+                🚨 Need Urgent Medical Attention?
+            </h3>
+
+            <p>
+                If you are experiencing a medical emergency,
+                contact your local emergency service or visit
+                the nearest emergency department immediately.
+            </p>
+
+        </div>
+
+
+        <a
+            href="tel:112"
+            class="emergency-btn">
+
+            📞 Emergency — 112
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     LEAFLET
+========================================================= -->
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+<script>
+
+/* =========================================================
+   HEALTHAI HEALTHCARE LOCATOR
+========================================================= */
+
+(function () {
+
+    "use strict";
+
+
+    /* =====================================================
+       GLOBAL STATE
+    ===================================================== */
+
+    let healthcareMap = null;
+
+    let facilityMarkers = [];
+
+    let currentLatitude = null;
+
+    let currentLongitude = null;
+
+
+    const DEFAULT_LATITUDE = 18.5204;
+
+    const DEFAULT_LONGITUDE = 73.8567;
+
+    const DEFAULT_LOCATION_NAME = "Pune";
+
+
+    /*
+     * Multiple Overpass servers are used.
+     * If one is unavailable, another is tried.
+     */
+
+    const OVERPASS_ENDPOINTS = [
+
+        "https://overpass-api.de/api/interpreter",
+
+        "https://overpass.kumi.systems/api/interpreter",
+
+        "https://overpass.private.coffee/api/interpreter"
+
+    ];
+
+
+    /* =====================================================
+       BASIC ELEMENTS
+    ===================================================== */
+
+    function get(id) {
+
+        return document.getElementById(id);
+
+    }
+
+
+    /* =====================================================
+       STATUS
+    ===================================================== */
+
+    function setStatus(
+        title,
+        details,
+        type = "success"
+    ) {
+
+        const status = get("locationStatus");
+
+        const titleElement = get("locationTitle");
+
+        const detailsElement = get("locationDetails");
+
+
+        if (!status) {
+            return;
+        }
+
+
+        status.style.display = "block";
+
+        status.className =
+            "location-status " + type;
+
+
+        if (titleElement) {
+            titleElement.textContent = title;
+        }
+
+
+        if (detailsElement) {
+            detailsElement.textContent = details;
+        }
+
+    }
+
+
+    /* =====================================================
+       HTML ESCAPE
+    ===================================================== */
+
+    function escapeHTML(value) {
+
+        if (
+            value === null ||
+            value === undefined
+        ) {
+
+            return "";
+
+        }
+
+
+        return String(value)
+
+            .replace(/&/g, "&amp;")
+
+            .replace(/</g, "&lt;")
+
+            .replace(/>/g, "&gt;")
+
+            .replace(/"/g, "&quot;")
+
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    /* =====================================================
+       DISTANCE
+    ===================================================== */
+
+    function calculateDistance(
+        lat1,
+        lon1,
+        lat2,
+        lon2
+    ) {
+
+        const R = 6371;
+
+
+        const dLat =
+            (lat2 - lat1) *
+            Math.PI / 180;
+
+
+        const dLon =
+            (lon2 - lon1) *
+            Math.PI / 180;
+
+
+        const a =
+
+            Math.sin(dLat / 2) *
+            Math.sin(dLat / 2)
+
+            +
+
+            Math.cos(
+                lat1 * Math.PI / 180
+            )
+
+            *
+
+            Math.cos(
+                lat2 * Math.PI / 180
+            )
+
+            *
+
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+
+
+        const c =
+            2 *
+            Math.atan2(
+                Math.sqrt(a),
+                Math.sqrt(1 - a)
+            );
+
+
+        return R * c;
+
+    }
+
+
+    /* =====================================================
+       INITIALIZE MAP
+    ===================================================== */
+
+    function initializeMap(
+        latitude,
+        longitude,
+        zoom = 12
+    ) {
+
+        const container =
+            get("healthcareMap");
+
+
+        if (!container) {
+            return;
+        }
+
+
+        if (
+            healthcareMap !== null
+        ) {
+
+            healthcareMap.remove();
+
+            healthcareMap = null;
+
+        }
+
+
+        healthcareMap =
+            L.map("healthcareMap")
+            .setView(
+                [latitude, longitude],
+                zoom
+            );
+
+
+        L.tileLayer(
+
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+            {
+
+                maxZoom: 19,
+
+                attribution:
+                    '&copy; OpenStreetMap contributors'
+
+            }
+
+        ).addTo(healthcareMap);
+
+
+        setTimeout(
+            function () {
+
+                healthcareMap.invalidateSize();
+
+            },
+            300
+        );
+
+    }
+
+
+    /* =====================================================
+       SHOW USER LOCATION
+    ===================================================== */
+
+    function showUserLocation(
+        latitude,
+        longitude,
+        accuracy
+    ) {
+
+        initializeMap(
+            latitude,
+            longitude,
+            14
+        );
+
+
+        const marker =
+            L.marker([
+                latitude,
+                longitude
+            ])
+            .addTo(healthcareMap);
+
+
+        marker.bindPopup(
+            "<strong>📍 Your Location</strong>"
+        );
+
+
+        marker.openPopup();
+
+
+        if (
+            accuracy &&
+            accuracy < 10000
+        ) {
+
+            L.circle(
+
+                [latitude, longitude],
+
+                {
+
+                    radius: accuracy,
+
+                    color: "#0d6efd",
+
+                    fillColor: "#0d6efd",
+
+                    fillOpacity: 0.10,
+
+                    weight: 2
+
+                }
+
+            ).addTo(
+                healthcareMap
+            );
+
+        }
+
+
+        createMapControls(
+            latitude,
+            longitude
+        );
+
+    }
+
+
+    /* =====================================================
+       LOCATION
+    ===================================================== */
+
+    window.getUserLocation =
+        function () {
+
+            setStatus(
+
+                "📍 Detecting your location...",
+
+                "Please allow location access in your browser.",
+
+                "success"
+
+            );
+
+
+            if (
+                !navigator.geolocation
+            ) {
+
+                setStatus(
+
+                    "⚠️ Location unavailable",
+
+                    "Your browser does not support location services.",
+
+                    "warning"
+
+                );
+
+
+                useDefaultLocation();
+
+                return;
+
+            }
+
+
+            navigator.geolocation.getCurrentPosition(
+
+                function (position) {
+
+                    currentLatitude =
+                        position.coords.latitude;
+
+
+                    currentLongitude =
+                        position.coords.longitude;
+
+
+                    const accuracy =
+                        position.coords.accuracy;
+
+
+                    setStatus(
+
+                        "📍 Location detected",
+
+                        "Accuracy approximately " +
+                        Math.round(accuracy) +
+                        " meters.",
+
+                        "success"
+
+                    );
+
+
+                    showUserLocation(
+
+                        currentLatitude,
+
+                        currentLongitude,
+
+                        accuracy
+
+                    );
+
+
+                    searchNearbyFacilities(
+
+                        currentLatitude,
+
+                        currentLongitude,
+
+                        getFacilityType()
+
+                    );
+
+                },
+
+
+                function (error) {
+
+                    console.warn(
+                        "Geolocation error:",
+                        error
+                    );
+
+
+                    setStatus(
+
+                        "⚠️ Location permission unavailable",
+
+                        "Showing healthcare facilities near Pune instead.",
+
+                        "warning"
+
+                    );
+
+
+                    useDefaultLocation();
+
+                },
+
+
+                {
+
+                    enableHighAccuracy: true,
+
+                    timeout: 12000,
+
+                    maximumAge: 300000
+
+                }
+
+            );
+
+        };
+
+
+    /* =====================================================
+       DEFAULT LOCATION
+    ===================================================== */
+
+    function useDefaultLocation() {
+
+        currentLatitude =
+            DEFAULT_LATITUDE;
+
+
+        currentLongitude =
+            DEFAULT_LONGITUDE;
+
+
+        initializeMap(
+
+            currentLatitude,
+
+            currentLongitude,
+
+            12
+
+        );
+
+
+        const marker =
+            L.marker([
+                currentLatitude,
+                currentLongitude
+            ])
+            .addTo(healthcareMap);
+
+
+        marker.bindPopup(
+            "<strong>📍 " +
+            DEFAULT_LOCATION_NAME +
+            "</strong><br>Fallback search location"
+        );
+
+
+        createMapControls(
+            currentLatitude,
+            currentLongitude
+        );
+
+
+        searchNearbyFacilities(
+
+            currentLatitude,
+
+            currentLongitude,
+
+            getFacilityType()
+
+        );
+
+    }
+
+
+    /* =====================================================
+       FACILITY TYPE
+    ===================================================== */
+
+    function getFacilityType() {
+
+        const select =
+            get("facilityType");
+
+
+        return select
+            ? select.value
+            : "all";
+
+    }
+
+
+    /* =====================================================
+       SEARCH RADIUS
+    ===================================================== */
+
+    function getSearchRadius() {
+
+        const select =
+            get("searchRadius");
+
+
+        return select
+            ? parseInt(
+                select.value,
+                10
+            ) || 5000
+            : 5000;
+
+    }
+
+
+    /* =====================================================
+       OVERPASS QUERY
+    ===================================================== */
+
+    function buildQuery(
+        latitude,
+        longitude,
+        radius,
+        type
+    ) {
+
+        let filters = "";
+
+
+        if (type === "hospital") {
+
+            filters = `
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=hospital];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=hospital];
+
+            `;
+
+        }
+
+        else if (type === "doctor") {
+
+            filters = `
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=doctors];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=doctor];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=clinic];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=clinic];
+
+            `;
+
+        }
+
+        else if (type === "pharmacy") {
+
+            filters = `
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=pharmacy];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=pharmacy];
+
+            `;
+
+        }
+
+        else if (type === "laboratory") {
+
+            filters = `
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=laboratory];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=laboratory];
+
+            `;
+
+        }
+
+        else {
+
+            filters = `
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=hospital];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=clinic];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=doctors];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=pharmacy];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[amenity=laboratory];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=hospital];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=clinic];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=doctor];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=pharmacy];
+
+                nwr(
+                    around:${radius},
+                    ${latitude},
+                    ${longitude}
+                )[healthcare=laboratory];
+
+            `;
+
+        }
+
+
+        return `
+
+            [out:json][timeout:30];
+
+            (
+
+                ${filters}
+
+            );
+
+            out center tags;
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       SEARCH NEARBY
+    ===================================================== */
+
+    async function searchNearbyFacilities(
+
+        latitude,
+
+        longitude,
+
+        type = "all"
+
+    ) {
+
+        showLoading();
+
+
+        const radius =
+            getSearchRadius();
+
+
+        const query =
+            buildQuery(
+
+                latitude,
+
+                longitude,
+
+                radius,
+
+                type
+
+            );
+
+
+        let data = null;
+
+        let lastError = null;
+
+
+        /*
+         * Try multiple Overpass servers.
+         */
+
+        for (
+            const endpoint
+            of OVERPASS_ENDPOINTS
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+
+                        endpoint,
+
+                        {
+
+                            method: "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/x-www-form-urlencoded;charset=UTF-8"
+
+                            },
+
+                            body:
+                                "data=" +
+                                encodeURIComponent(
+                                    query
+                                )
+
+                        }
+
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "HTTP " +
+                        response.status
+                    );
+
+                }
+
+
+                const result =
+                    await response.json();
+
+
+                if (
+                    result &&
+                    Array.isArray(
+                        result.elements
+                    )
+                ) {
+
+                    data = result;
+
+                    break;
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.warn(
+                    "Overpass server failed:",
+                    endpoint,
+                    error
+                );
+
+                lastError = error;
+
+            }
+
+        }
+
+
+        if (
+            !data ||
+            !Array.isArray(
+                data.elements
+            )
+        ) {
+
+            console.error(
+                "All Overpass servers failed:",
+                lastError
+            );
+
+
+            showErrorState();
+
+            return;
+
+        }
+
+
+        const facilities =
+            processFacilities(
+
+                data.elements,
+
+                latitude,
+
+                longitude
+
+            );
+
+
+        displayFacilities(
+            facilities
+        );
+
+
+        displayFacilityMarkers(
+            facilities
+        );
+
+
+        updateLastUpdated(
+
+            facilities.length,
+
+            radius
+
+        );
+
+    }
+
+
+    /* =====================================================
+       PROCESS FACILITIES
+    ===================================================== */
+
+    function processFacilities(
+
+        elements,
+
+        latitude,
+
+        longitude
+
+    ) {
+
+        const facilities = [];
+
+        const seen = new Set();
+
+
+        elements.forEach(
+
+            function (element) {
+
+                const tags =
+                    element.tags || {};
+
+
+                let lat =
+                    element.lat;
+
+                let lon =
+                    element.lon;
+
+
+                if (
+                    (
+                        lat === undefined ||
+                        lon === undefined
+                    ) &&
+                    element.center
+                ) {
+
+                    lat =
+                        element.center.lat;
+
+                    lon =
+                        element.center.lon;
+
+                }
+
+
+                if (
+                    typeof lat !== "number" ||
+                    typeof lon !== "number"
+                ) {
+
+                    return;
+
+                }
+
+
+                const name =
+                    tags.name ||
+                    tags["name:en"] ||
+                    tags.operator ||
+                    "Unnamed Healthcare Facility";
+
+
+                const key =
+                    name.toLowerCase() +
+                    "|" +
+                    lat.toFixed(5) +
+                    "|" +
+                    lon.toFixed(5);
+
+
+                if (
+                    seen.has(key)
+                ) {
+
+                    return;
+
+                }
+
+
+                seen.add(key);
+
+
+                const distance =
+                    calculateDistance(
+
+                        latitude,
+
+                        longitude,
+
+                        lat,
+
+                        lon
+
+                    );
+
+
+                facilities.push({
+
+                    id:
+                        element.id,
+
+                    name:
+                        name,
+
+                    type:
+                        detectFacilityType(
+                            tags
+                        ),
+
+                    latitude:
+                        lat,
+
+                    longitude:
+                        lon,
+
+                    distance:
+                        distance,
+
+                    address:
+                        buildAddress(
+                            tags
+                        ),
+
+                    phone:
+                        tags.phone ||
+                        tags["contact:phone"] ||
+                        "",
+
+                    website:
+                        tags.website ||
+                        tags["contact:website"] ||
+                        "",
+
+                    openingHours:
+                        tags.opening_hours ||
+                        ""
+
+                });
+
+            }
+
+        );
+
+
+        facilities.sort(
+
+            function (a, b) {
+
+                return (
+                    a.distance -
+                    b.distance
+                );
+
+            }
+
+        );
+
+
+        return facilities.slice(
+            0,
+            30
+        );
+
+    }
+
+
+    /* =====================================================
+       TYPE
+    ===================================================== */
+
+    function detectFacilityType(tags) {
+
+        if (
+            tags.amenity === "hospital" ||
+            tags.healthcare === "hospital"
+        ) {
+
+            return "Hospital";
+
+        }
+
+
+        if (
+            tags.amenity === "clinic" ||
+            tags.healthcare === "clinic"
+        ) {
+
+            return "Clinic";
+
+        }
+
+
+        if (
+            tags.amenity === "doctors" ||
+            tags.healthcare === "doctor"
+        ) {
+
+            return "Doctor / Clinic";
+
+        }
+
+
+        if (
+            tags.amenity === "pharmacy" ||
+            tags.healthcare === "pharmacy"
+        ) {
+
+            return "Pharmacy";
+
+        }
+
+
+        if (
+            tags.amenity === "laboratory" ||
+            tags.healthcare === "laboratory"
+        ) {
+
+            return "Diagnostic Lab";
+
+        }
+
+
+        return "Healthcare Facility";
+
+    }
+
+
+    /* =====================================================
+       ADDRESS
+    ===================================================== */
+
+    function buildAddress(tags) {
+
+        const parts = [];
+
+
+        [
+            "addr:housenumber",
+            "addr:street",
+            "addr:suburb",
+            "addr:city",
+            "addr:postcode"
+
+        ].forEach(
+
+            function (key) {
+
+                if (
+                    tags[key]
+                ) {
+
+                    parts.push(
+                        tags[key]
+                    );
+
+                }
+
+            }
+
+        );
+
+
+        return parts.length
+            ? parts.join(", ")
+            : "Address information unavailable";
+
+    }
+
+
+    /* =====================================================
+       DISPLAY RESULTS
+    ===================================================== */
+
+    function displayFacilities(
+        facilities
+    ) {
+
+        const section =
+            get("resultsSection");
+
+        const count =
+            get("resultsCount");
+
+        const list =
+            get("facilityList");
+
+
+        if (
+            !section ||
+            !count ||
+            !list
+        ) {
+
+            return;
+
+        }
+
+
+        section.style.display =
+            "block";
+
+
+        if (
+            !facilities.length
+        ) {
+
+            count.textContent =
+                "0 facilities";
+
+
+            list.innerHTML = `
+
+                <div class="no-results">
+
+                    <div class="state-icon">
+                        🏥
+                    </div>
+
+                    <strong>
+                        No healthcare facilities found nearby
+                    </strong>
+
+                    <p>
+                        Try increasing the search radius
+                        or selecting another facility type.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        count.textContent =
+            facilities.length +
+            " facilities found";
+
+
+        list.innerHTML = "";
+
+
+        facilities.forEach(
+
+            function (facility) {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "facility-card";
+
+
+                card.id =
+                    "facility-" +
+                    facility.id;
+
+
+                const directionsURL =
+                    "https://www.google.com/maps/dir/?api=1" +
+                    "&destination=" +
+                    facility.latitude +
+                    "," +
+                    facility.longitude;
+
+
+                const mapsURL =
+                    "https://www.google.com/maps/search/?api=1" +
+                    "&query=" +
+                    encodeURIComponent(
+                        facility.name +
+                        " " +
+                        facility.latitude +
+                        "," +
+                        facility.longitude
+                    );
+
+
+                card.innerHTML = `
+
+                    <div>
+
+                        <h3 class="facility-name">
+
+                            ${escapeHTML(
+                                facility.name
+                            )}
+
+                        </h3>
+
+                        <span class="facility-type">
+
+                            ${escapeHTML(
+                                facility.type
+                            )}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="facility-address">
+
+                        📍 ${escapeHTML(
+                            facility.address
+                        )}
+
+                    </div>
+
+
+                    <div class="facility-distance">
+
+                        📏
+                        ${facility.distance.toFixed(2)}
+                        km away
+
+                    </div>
+
+
+                    ${
+                        facility.phone
+
+                        ?
+
+                        `
+
+                        <div class="facility-distance">
+
+                            📞
+                            ${escapeHTML(
+                                facility.phone
+                            )}
+
+                        </div>
+
+                        `
+
+                        :
+
+                        ""
+                    }
+
+
+                    ${
+                        facility.openingHours
+
+                        ?
+
+                        `
+
+                        <div class="facility-distance">
+
+                            🕒
+                            ${escapeHTML(
+                                facility.openingHours
+                            )}
+
+                        </div>
+
+                        `
+
+                        :
+
+                        ""
+                    }
+
+
+                    <div class="facility-actions">
+
+                        <a
+                            href="${directionsURL}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="facility-btn primary">
+
+                            🗺️ Directions
+
+                        </a>
+
+
+                        <a
+                            href="${mapsURL}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="facility-btn secondary">
+
+                            📍 View on Maps
+
+                        </a>
+
+
+                        ${
+                            facility.phone
+
+                            ?
+
+                            `
+
+                            <a
+                                href="tel:${encodeURIComponent(
+                                    facility.phone
+                                )}"
+                                class="facility-btn call">
+
+                                📞 Call
+
+                            </a>
+
+                            `
+
+                            :
+
+                            ""
+                        }
+
+                    </div>
+
+                `;
+
+
+                list.appendChild(
+                    card
+                );
+
+            }
+
+        );
+
+    }
+
+
+    /* =====================================================
+       MAP MARKERS
+    ===================================================== */
+
+    function displayFacilityMarkers(
+        facilities
+    ) {
+
+        if (
+            !healthcareMap
+        ) {
+
+            return;
+
+        }
+
+
+        facilityMarkers.forEach(
+
+            function (marker) {
+
+                healthcareMap.removeLayer(
+                    marker
+                );
+
+            }
+
+        );
+
+
+        facilityMarkers = [];
+
+
+        facilities.forEach(
+
+            function (facility) {
+
+                const marker =
+                    L.marker([
+
+                        facility.latitude,
+
+                        facility.longitude
+
+                    ]).addTo(
+                        healthcareMap
+                    );
+
+
+                marker.bindPopup(`
+
+                    <strong>
+
+                        ${escapeHTML(
+                            facility.name
+                        )}
+
+                    </strong>
+
+                    <br>
+
+                    ${escapeHTML(
+                        facility.type
+                    )}
+
+                    <br>
+
+                    📍
+                    ${facility.distance.toFixed(2)}
+                    km away
+
+                `);
+
+
+                marker.on(
+                    "click",
+                    function () {
+
+                        const card =
+                            get(
+                                "facility-" +
+                                facility.id
+                            );
+
+
+                        if (card) {
+
+                            card.scrollIntoView({
+
+                                behavior:
+                                    "smooth",
+
+                                block:
+                                    "center"
+
+                            });
+
+                        }
+
+                    }
+                );
+
+
+                facilityMarkers.push(
+                    marker
+                );
+
+            }
+
+        );
+
+
+        if (
+            facilities.length
+        ) {
+
+            const bounds =
+                L.latLngBounds([]);
+
+
+            facilities.forEach(
+
+                function (facility) {
+
+                    bounds.extend([
+
+                        facility.latitude,
+
+                        facility.longitude
+
+                    ]);
+
+                }
+
+            );
+
+
+            if (
+                currentLatitude !== null
+            ) {
+
+                bounds.extend([
+
+                    currentLatitude,
+
+                    currentLongitude
+
+                ]);
+
+            }
+
+
+            healthcareMap.fitBounds(
+
+                bounds,
+
+                {
+
+                    padding: [
+                        30,
+                        30
+                    ]
+
+                }
+
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       LOADING
+    ===================================================== */
+
+    function showLoading() {
+
+        const section =
+            get("resultsSection");
+
+        const count =
+            get("resultsCount");
+
+        const list =
+            get("facilityList");
+
+
+        section.style.display =
+            "block";
+
+
+        count.textContent =
+            "Searching...";
+
+
+        list.innerHTML = `
+
+            <div class="healthcare-loading">
+
+                <div class="spinner"></div>
+
+                Searching nearby healthcare facilities...
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       ERROR
+    ===================================================== */
+
+    function showErrorState() {
+
+        const section =
+            get("resultsSection");
+
+        const count =
+            get("resultsCount");
+
+        const list =
+            get("facilityList");
+
+
+        section.style.display =
+            "block";
+
+
+        count.textContent =
+            "Unavailable";
+
+
+        list.innerHTML = `
+
+            <div class="no-results">
+
+                <div class="state-icon">
+                    ⚠️
+                </div>
+
+                <strong>
+                    Healthcare locations could not be loaded
+                </strong>
+
+                <p>
+                    The external healthcare-data service
+                    is temporarily unavailable.
+                    Please try again.
+                </p>
+
+                <button
+                    type="button"
+                    class="search-btn"
+                    onclick="refreshHealthcareResults()">
+
+                    🔄 Try Again
+
+                </button>
+
+            </div>
+
+        `;
+
+
+        setStatus(
+
+            "⚠️ Healthcare search unavailable",
+
+            "Please try again in a moment.",
+
+            "warning"
+
+        );
+
+    }
+
+
+    /* =====================================================
+       REFRESH
+    ===================================================== */
+
+    window.refreshHealthcareResults =
+        function () {
+
+            if (
+                currentLatitude === null ||
+                currentLongitude === null
+            ) {
+
+                window.getUserLocation();
+
+                return;
+
+            }
+
+
+            searchNearbyFacilities(
+
+                currentLatitude,
+
+                currentLongitude,
+
+                getFacilityType()
+
+            );
+
+        };
+
+
+    /* =====================================================
+       DOCTORS
+    ===================================================== */
+
+    window.findNearbyDoctors =
+        function () {
+
+            if (
+                currentLatitude === null ||
+                currentLongitude === null
+            ) {
+
+                window.getUserLocation();
+
+                setTimeout(
+
+                    function () {
+
+                        if (
+                            currentLatitude !== null
+                        ) {
+
+                            const select =
+                                get(
+                                    "facilityType"
+                                );
+
+
+                            if (select) {
+                                select.value =
+                                    "doctor";
+                            }
+
+
+                            searchNearbyFacilities(
+
+                                currentLatitude,
+
+                                currentLongitude,
+
+                                "doctor"
+
+                            );
+
+                        }
+
+                    },
+
+                    1500
+
+                );
+
+                return;
+
+            }
+
+
+            const select =
+                get("facilityType");
+
+
+            if (select) {
+                select.value = "doctor";
+            }
+
+
+            searchNearbyFacilities(
+
+                currentLatitude,
+
+                currentLongitude,
+
+                "doctor"
+
+            );
+
+        };
+
+
+    /* =====================================================
+       HOSPITALS
+    ===================================================== */
+
+    window.findNearbyHospitals =
+        function () {
+
+            if (
+                currentLatitude === null ||
+                currentLongitude === null
+            ) {
+
+                window.getUserLocation();
+
+                setTimeout(
+
+                    function () {
+
+                        if (
+                            currentLatitude !== null
+                        ) {
+
+                            const select =
+                                get(
+                                    "facilityType"
+                                );
+
+
+                            if (select) {
+                                select.value =
+                                    "hospital";
+                            }
+
+
+                            searchNearbyFacilities(
+
+                                currentLatitude,
+
+                                currentLongitude,
+
+                                "hospital"
+
+                            );
+
+                        }
+
+                    },
+
+                    1500
+
+                );
+
+                return;
+
+            }
+
+
+            const select =
+                get("facilityType");
+
+
+            if (select) {
+                select.value = "hospital";
+            }
+
+
+            searchNearbyFacilities(
+
+                currentLatitude,
+
+                currentLongitude,
+
+                "hospital"
+
+            );
+
+        };
+
+
+    /* =====================================================
+       EMERGENCY
+    ===================================================== */
+
+    window.openEmergencyHospitals =
+        function () {
+
+            if (
+                currentLatitude !== null &&
+                currentLongitude !== null
+            ) {
+
+                const url =
+
+                    "https://www.google.com/maps/search/" +
+
+                    "emergency+hospital/" +
+
+                    "@" +
+
+                    currentLatitude +
+
+                    "," +
+
+                    currentLongitude +
+
+                    ",14z";
+
+
+                window.open(
+                    url,
+                    "_blank",
+                    "noopener,noreferrer"
+                );
+
+
+                return;
+
+            }
+
+
+            window.open(
+
+                "https://www.google.com/maps/search/emergency+hospital",
+
+                "_blank",
+
+                "noopener,noreferrer"
+
+            );
+
+        };
+
+
+    /* =====================================================
+       LOCATION SEARCH
+    ===================================================== */
+
+    window.searchLocation =
+        async function () {
+
+            const input =
+                get("locationSearch");
+
+
+            const search =
+                input
+                    ? input.value.trim()
+                    : "";
+
+
+            if (!search) {
+
+                setStatus(
+
+                    "⚠️ Enter a location",
+
+                    "Enter a city, area or healthcare facility.",
+
+                    "warning"
+
+                );
+
+                return;
+
+            }
+
+
+            setStatus(
+
+                "🔎 Searching location...",
+
+                "Finding " +
+                search +
+                "...",
+
+                "success"
+
+            );
+
+
+            try {
+
+                const url =
+
+                    "https://nominatim.openstreetmap.org/search" +
+
+                    "?format=json" +
+
+                    "&limit=1" +
+
+                    "&q=" +
+
+                    encodeURIComponent(
+                        search
+                    );
+
+
+                const response =
+                    await fetch(
+
+                        url,
+
+                        {
+
+                            headers: {
+
+                                "Accept":
+                                    "application/json"
+
+                            }
+
+                        }
+
+                    );
+
+
+                if (
+                    !response.ok
+                ) {
+
+                    throw new Error(
+                        "Nominatim HTTP " +
+                        response.status
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !data ||
+                    !data.length
+                ) {
+
+                    setStatus(
+
+                        "⚠️ Location not found",
+
+                        "Try another city, area or facility.",
+
+                        "warning"
+
+                    );
+
+                    return;
+
+                }
+
+
+                currentLatitude =
+                    parseFloat(
+                        data[0].lat
+                    );
+
+
+                currentLongitude =
+                    parseFloat(
+                        data[0].lon
+                    );
+
+
+                const displayName =
+                    data[0].display_name;
+
+
+                setStatus(
+
+                    "📍 Location found",
+
+                    displayName,
+
+                    "success"
+
+                );
+
+
+                initializeMap(
+
+                    currentLatitude,
+
+                    currentLongitude,
+
+                    14
+
+                );
+
+
+                const marker =
+                    L.marker([
+
+                        currentLatitude,
+
+                        currentLongitude
+
+                    ]).addTo(
+                        healthcareMap
+                    );
+
+
+                marker.bindPopup(
+
+                    "<strong>📍 " +
+
+                    escapeHTML(
+                        displayName
+                    ) +
+
+                    "</strong>"
+
+                ).openPopup();
+
+
+                createMapControls(
+
+                    currentLatitude,
+
+                    currentLongitude
+
+                );
+
+
+                searchNearbyFacilities(
+
+                    currentLatitude,
+
+                    currentLongitude,
+
+                    getFacilityType()
+
+                );
+
+
+                get("map").scrollIntoView({
+
+                    behavior:
+                        "smooth",
+
+                    block:
+                        "start"
+
+                });
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Location search error:",
+                    error
+                );
+
+
+                setStatus(
+
+                    "⚠️ Search failed",
+
+                    "Unable to search this location. Please try again.",
+
+                    "warning"
+
+                );
+
+            }
+
+        };
+
+
+    /* =====================================================
+       MAP CONTROLS
+    ===================================================== */
+
+    function createMapControls(
+        latitude,
+        longitude
+    ) {
+
+        const container =
+            get("mapControls");
+
+
+        if (!container) {
+            return;
+        }
+
+
+        container.innerHTML = "";
+
+
+        const hospital =
+            document.createElement(
+                "button"
+            );
+
+
+        hospital.type =
+            "button";
+
+
+        hospital.className =
+            "map-control-btn hospital";
+
+
+        hospital.textContent =
+            "🏥 Find Hospitals";
+
+
+        hospital.onclick =
+            function () {
+
+                const select =
+                    get("facilityType");
+
+
+                if (select) {
+                    select.value =
+                        "hospital";
+                }
+
+
+                searchNearbyFacilities(
+
+                    latitude,
+
+                    longitude,
+
+                    "hospital"
+
+                );
+
+            };
+
+
+        const doctor =
+            document.createElement(
+                "button"
+            );
+
+
+        doctor.type =
+            "button";
+
+
+        doctor.className =
+            "map-control-btn doctor";
+
+
+        doctor.textContent =
+            "👨‍⚕️ Find Doctors";
+
+
+        doctor.onclick =
+            function () {
+
+                const select =
+                    get("facilityType");
+
+
+                if (select) {
+                    select.value =
+                        "doctor";
+                }
+
+
+                searchNearbyFacilities(
+
+                    latitude,
+
+                    longitude,
+
+                    "doctor"
+
+                );
+
+            };
+
+
+        const maps =
+            document.createElement(
+                "a"
+            );
+
+
+        maps.className =
+            "map-control-btn maps";
+
+
+        maps.textContent =
+            "🗺️ Open Google Maps";
+
+
+        maps.href =
+
+            "https://www.google.com/maps/search/?api=1" +
+
+            "&query=" +
+
+            latitude +
+
+            "," +
+
+            longitude;
+
+
+        maps.target =
+            "_blank";
+
+
+        maps.rel =
+            "noopener noreferrer";
+
+
+        container.appendChild(
+            hospital
+        );
+
+
+        container.appendChild(
+            doctor
+        );
+
+
+        container.appendChild(
+            maps
+        );
+
+    }
+
+
+    /* =====================================================
+       TIMESTAMP
+    ===================================================== */
+
+    function updateLastUpdated(
+        count,
+        radius
+    ) {
+
+        const element =
+            get("lastUpdated");
+
+
+        if (!element) {
+            return;
+        }
+
+
+        const time =
+            new Date()
+                .toLocaleTimeString();
+
+
+        element.textContent =
+
+            "Updated " +
+
+            time +
+
+            " • " +
+
+            count +
+
+            " results within " +
+
+            (radius / 1000) +
+
+            " km";
+
+    }
+
+
+    /* =====================================================
+       FILTER CHANGES
+    ===================================================== */
+
+    document.addEventListener(
+
+        "DOMContentLoaded",
+
+        function () {
+
+            /*
+             * Initial map.
+             */
+
+            initializeMap(
+
+                DEFAULT_LATITUDE,
+
+                DEFAULT_LONGITUDE,
+
+                11
+
+            );
+
+
+            const typeSelect =
+                get("facilityType");
+
+
+            if (typeSelect) {
+
+                typeSelect.addEventListener(
+
+                    "change",
+
+                    function () {
+
+                        if (
+                            currentLatitude !== null
+                        ) {
+
+                            searchNearbyFacilities(
+
+                                currentLatitude,
+
+                                currentLongitude,
+
+                                typeSelect.value
+
+                            );
+
+                        }
+
+                    }
+
+                );
+
+            }
+
+
+            const radiusSelect =
+                get("searchRadius");
+
+
+            if (radiusSelect) {
+
+                radiusSelect.addEventListener(
+
+                    "change",
+
+                    function () {
+
+                        if (
+                            currentLatitude !== null
+                        ) {
+
+                            searchNearbyFacilities(
+
+                                currentLatitude,
+
+                                currentLongitude,
+
+                                getFacilityType()
+
+                            );
+
+                        }
+
+                    }
+
+                );
+
+            }
+
+
+            const input =
+                get("locationSearch");
+
+
+            if (input) {
+
+                input.addEventListener(
+
+                    "keydown",
+
+                    function (event) {
+
+                        if (
+                            event.key === "Enter"
+                        ) {
+
+                            event.preventDefault();
+
+                            window.searchLocation();
+
+                        }
+
+                    }
+
+                );
+
+            }
+
+        }
+
+    );
+
+})();
+
+</script>
+
+{% endblock %}

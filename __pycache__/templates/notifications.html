@@ -1,0 +1,167 @@
+{% extends "layout.html" %}
+
+{% block title %}Notifications | HealthAI{% endblock %}
+
+{% block content %}
+
+<style>
+.notifications-page{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.notifications-hero{background:linear-gradient(135deg,#0b315b,#1769aa);color:#fff;border-radius:22px;padding:28px 30px;margin-bottom:22px;box-shadow:0 12px 32px rgba(11,49,91,.14)}
+.notifications-hero-top{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+.notifications-kicker{text-transform:uppercase;font-size:11px;font-weight:800;letter-spacing:1.4px;opacity:.72;margin-bottom:6px}
+.notifications-title{font-size:30px;font-weight:800;margin:0}.notifications-subtitle{margin:7px 0 0;opacity:.8;font-size:14px}
+.hero-actions{display:flex;gap:9px;flex-wrap:wrap}.hero-btn{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;border-radius:11px;padding:10px 14px;text-decoration:none;font-size:13px;font-weight:650}.hero-btn:hover{background:#fff;color:#1769aa}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}.summary-card{background:#fff;border:1px solid #e3edf5;border-radius:16px;padding:18px 20px;box-shadow:0 6px 20px rgba(11,31,51,.05)}.summary-label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#7b8b9a;font-weight:750}.summary-value{font-size:25px;font-weight:800;color:#0b315b;margin-top:4px}.summary-note{font-size:12px;color:#8392a1}
+.controls{background:#fff;border:1px solid #e3edf5;border-radius:18px;padding:17px;margin-bottom:20px;box-shadow:0 6px 20px rgba(11,31,51,.04)}.controls-top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.search-wrap{position:relative;flex:1;min-width:240px}.search-wrap span{position:absolute;left:13px;top:10px;font-size:16px}.search-input{width:100%;border:1px solid #dbe6ef;border-radius:11px;padding:10px 12px 10px 38px;outline:none;font-size:13px}.search-input:focus{border-color:#5ba4d8;box-shadow:0 0 0 3px rgba(23,105,170,.08)}.filters{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}.filter-btn{border:1px solid #dbe6ef;background:#f8fbfd;color:#526679;border-radius:20px;padding:8px 12px;font-size:12px;font-weight:650;cursor:pointer}.filter-btn.active,.filter-btn:hover{background:#eaf4fb;color:#1769aa;border-color:#bcd9ed}.filter-count{font-weight:800;margin-left:3px}
+.notification-list{display:flex;flex-direction:column;gap:12px}.notification-card{position:relative;background:#fff;border:1px solid #e3edf5;border-radius:18px;padding:20px;box-shadow:0 5px 18px rgba(11,31,51,.045);transition:.2s}.notification-card:hover{transform:translateY(-1px);box-shadow:0 9px 24px rgba(11,31,51,.07)}.notification-card.unread{border-color:#9fc9e8;background:linear-gradient(90deg,#fafdff,#fff)}.notification-card.hidden{display:none}.notification-layout{display:flex;gap:15px}.notification-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;background:#eef6fb}.notification-icon.danger{background:#fff0f0}.notification-icon.warning{background:#fff8e5}.notification-icon.success{background:#eaf8ef}.notification-content{min-width:0;flex:1}.notification-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.notification-title{font-size:15px;font-weight:750;color:#0b1f33;margin:0}.notification-message{font-size:13px;line-height:1.6;color:#687b8d;margin:7px 0 9px}.notification-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px;color:#8796a4}.status-chip{border-radius:20px;padding:4px 8px;font-weight:750}.new-chip{background:#1769aa;color:#fff}.priority-chip{background:#f0f4f7;color:#637586}.priority-chip.important{background:#fff0f0;color:#b43a30}.priority-chip.attention{background:#fff7df;color:#866800}.notification-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.notification-action{border:1px solid #d7e4ed;background:#fff;color:#1769aa;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:650;text-decoration:none;cursor:pointer}.notification-action:hover{background:#eaf4fb}.notification-action.primary{background:#1769aa;color:#fff;border-color:#1769aa}.notification-action.primary:hover{background:#0b5d96}.notification-form{display:inline}.notification-date{white-space:nowrap}
+.empty-state{background:#fff;border:1px solid #e3edf5;border-radius:20px;padding:55px 25px;text-align:center;box-shadow:0 6px 20px rgba(11,31,51,.04)}.empty-icon{width:72px;height:72px;border-radius:22px;background:#eaf4fb;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 15px}.empty-state h3{color:#0b1f33;font-size:21px}.empty-state p{color:#718394;font-size:13px;max-width:520px;margin:0 auto 20px}.no-results{display:none;text-align:center;padding:30px;color:#7b8c9c;background:#fff;border:1px dashed #ccdce8;border-radius:16px}
+@media(max-width:760px){.summary-grid{grid-template-columns:1fr}.notifications-page{padding:22px 12px 45px}.notifications-hero{padding:22px;border-radius:17px}.notifications-title{font-size:25px}.notification-layout{gap:11px}.notification-icon{width:40px;height:40px;border-radius:12px}.notification-top{display:block}.notification-date{display:block;margin-top:5px}.search-wrap{min-width:100%}}
+</style>
+
+<div class="notifications-page">
+
+    <section class="notifications-hero">
+        <div class="notifications-hero-top">
+            <div>
+                <div class="notifications-kicker">Health Activity Center</div>
+                <h1 class="notifications-title">🔔 Notifications</h1>
+                <p class="notifications-subtitle">Stay updated with your assessments, medical reports and HealthAI activity.</p>
+            </div>
+            <div class="hero-actions">
+                {% if unread_count > 0 %}
+                <a href="{{ url_for('mark_all_notifications_read') }}" class="hero-btn">✓ Mark All as Read</a>
+                {% endif %}
+                <a href="{{ url_for('dashboard') }}" class="hero-btn">🏠 Dashboard</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="summary-grid">
+        <div class="summary-card"><div class="summary-label">Total Notifications</div><div class="summary-value">{{ total_notifications }}</div><div class="summary-note">All saved activity alerts</div></div>
+        <div class="summary-card"><div class="summary-label">Unread</div><div class="summary-value">{{ unread_count }}</div><div class="summary-note">Notifications needing review</div></div>
+        <div class="summary-card"><div class="summary-label">Smart Alerts</div><div class="summary-value">{{ smart_alert_count|default(0) }}</div><div class="summary-note">Trend & assessment changes</div></div>
+        <div class="summary-card"><div class="summary-label">Status</div><div class="summary-value">{% if unread_count == 0 %}✓ Caught Up{% else %}● Active{% endif %}</div><div class="summary-note">Your notification inbox</div></div>
+    </section>
+
+    {% if notifications %}
+    <section class="controls">
+        <div class="controls-top">
+            <div class="search-wrap"><span>🔍</span><input id="notificationSearch" class="search-input" type="search" placeholder="Search notifications..." autocomplete="off"></div>
+        </div>
+        <div class="filters" id="notificationFilters">
+            <button class="filter-btn active" data-filter="all">All <span class="filter-count">{{ total_notifications }}</span></button>
+            <button class="filter-btn" data-filter="unread">Unread <span class="filter-count">{{ unread_count }}</span></button>
+            <button class="filter-btn" data-filter="assessment">❤️ Assessments</button>
+            <button class="filter-btn" data-filter="smart">🧠 Smart Alerts</button>
+            <button class="filter-btn" data-filter="report">📄 Reports</button>
+            <button class="filter-btn" data-filter="important">⚠ Important</button>
+        </div>
+    </section>
+
+    <section class="notification-list" id="notificationList">
+        {% for notification in notifications %}
+            {% set ntype = notification[3]|lower if notification[3] else 'info' %}
+            {% set title_lower = notification[1]|lower %}
+            {% if notification[6] == 'prediction' or 'prediction' in title_lower or 'assessment' in title_lower %}
+                {% if 'risk probability' in title_lower or 'classification changed' in title_lower or 'assessment values changed' in title_lower %}
+                    {% set category = 'smart' %}
+                {% else %}
+                    {% set category = 'assessment' %}
+                {% endif %}
+            {% elif 'risk probability' in title_lower or 'classification changed' in title_lower or 'assessment values changed' in title_lower %}
+                {% set category = 'smart' %}
+            {% elif notification[6] == 'report' or 'report' in title_lower or 'medical' in title_lower %}
+                {% set category = 'report' %}
+            {% else %}
+                {% set category = 'system' %}
+            {% endif %}
+            {% if notification[8] == 'important' or ntype == 'danger' %}
+                {% set priority = 'important' %}
+            {% elif notification[8] == 'attention' or ntype == 'warning' %}
+                {% set priority = 'attention' %}
+            {% else %}
+                {% set priority = 'normal' %}
+            {% endif %}
+
+            <article class="notification-card {% if notification[4] == 0 %}unread{% endif %}"
+                     data-category="{{ category }}"
+                     data-read="{{ 'unread' if notification[4] == 0 else 'read' }}"
+                     data-priority="{{ priority }}"
+                     data-search="{{ (notification[1] ~ ' ' ~ notification[2] ~ ' ' ~ category)|lower }}">
+                <div class="notification-layout">
+                    <div class="notification-icon {{ ntype }}">
+                        {% if category == 'smart' %}🧠{% elif ntype == 'success' %}✅{% elif ntype == 'warning' %}⚠️{% elif ntype == 'danger' %}🚨{% else %}🔔{% endif %}
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-top">
+                            <h3 class="notification-title">
+                                {{ notification[1] }}
+                                {% if notification[4] == 0 %}<span class="status-chip new-chip">New</span>{% endif %}
+                            </h3>
+                            <span class="notification-date">{{ notification[5].strftime('%d %b %Y, %I:%M %p') if notification[5] else '' }}</span>
+                        </div>
+                        <p class="notification-message">{{ notification[2] }}</p>
+                        <div class="notification-meta">
+                            <span class="status-chip priority-chip {% if priority != 'normal' %}{{ priority }}{% endif %}">{{ priority|title }}</span>
+                            <span>•</span>
+                            <span>{{ 'Smart Alert' if category == 'smart' else ('Assessment' if category == 'assessment' else ('Medical Report' if category == 'report' else 'System Update')) }}</span>
+                            {% if notification[4] == 1 %}<span>•</span><span>Read</span>{% endif %}
+                        </div>
+
+                        <div class="notification-actions">
+                            {% if notification[6] == 'prediction' and notification[7] %}
+                                <a class="notification-action primary" href="{{ url_for('prediction_detail', prediction_id=notification[7]) }}">View Assessment</a>
+                            {% elif notification[6] == 'report' %}
+                                <a class="notification-action primary" href="{{ url_for('reports') }}">View Reports</a>
+                            {% elif 'ai' in title_lower or 'assistant' in title_lower %}
+                                <a class="notification-action primary" href="{{ url_for('dashboard', assistant='1') }}">Open AI Assistant</a>
+                            {% endif %}
+
+                            {% if notification[4] == 0 %}
+                                <form method="POST" action="{{ url_for('mark_notification_read', notification_id=notification[0]) }}" class="notification-form">
+                                    <button type="submit" class="notification-action">✓ Mark as Read</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </article>
+        {% endfor %}
+    </section>
+    <div id="noNotificationResults" class="no-results">No notifications match your search or selected filter.</div>
+
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🔔</div>
+            <h3>No Notifications Yet</h3>
+            <p>You're all caught up. Notifications about assessments, medical reports and important HealthAI activity will appear here.</p>
+            <a href="{{ url_for('heart_prediction') }}" class="notification-action primary">❤️ Start Health Assessment</a>
+        </div>
+    {% endif %}
+
+</div>
+
+<script>
+(function(){
+    const cards=[...document.querySelectorAll('.notification-card')];
+    const buttons=[...document.querySelectorAll('#notificationFilters .filter-btn')];
+    const search=document.getElementById('notificationSearch');
+    const empty=document.getElementById('noNotificationResults');
+    if(!cards.length || !buttons.length) return;
+    let active='all';
+    function apply(){
+        const q=(search?.value||'').trim().toLowerCase(); let visible=0;
+        cards.forEach(card=>{
+            const category=card.dataset.category, read=card.dataset.read, priority=card.dataset.priority;
+            const filterOk=active==='all'||(active==='unread'&&read==='unread')||(active==='important'&&priority==='important')||(active===category);
+            const searchOk=!q||(card.dataset.search||'').includes(q);
+            const show=filterOk&&searchOk; card.classList.toggle('hidden',!show); if(show) visible++;
+        });
+        if(empty) empty.style.display=visible?'none':'block';
+    }
+    buttons.forEach(btn=>btn.addEventListener('click',()=>{buttons.forEach(b=>b.classList.remove('active'));btn.classList.add('active');active=btn.dataset.filter;apply();}));
+    if(search) search.addEventListener('input',apply);
+})();
+</script>
+
+{% endblock %}
