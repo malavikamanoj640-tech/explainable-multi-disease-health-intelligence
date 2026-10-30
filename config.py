@@ -22,9 +22,9 @@ MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = 587
 MAIL_USE_TLS = True
 
-MAIL_USERNAME = "malavikamanoj640@gmail.com"
+MAIL_USERNAME = "your_email"
 
-MAIL_PASSWORD = "pxjf iwgf ouzs svku"
+MAIL_PASSWORD = "your_created_password"
 
 MAIL_FROM = MAIL_USERNAME
 
