@@ -539,7 +539,7 @@ MAIL_PASSWORD=your-app-password
 MAIL_FROM=your-email
 ```
 
-**Never commit email passwords or app passwords to GitHub.**
+
 
 ## 6. Optional — Start Ollama
 
