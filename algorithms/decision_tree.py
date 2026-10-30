@@ -1,0 +1,40 @@
+import pandas as pd
+
+# Load dataset
+df = pd.read_csv("dataset/heart_failure_clinical_records_dataset.csv")
+
+# Features and Target
+X = df.drop("DEATH_EVENT", axis=1)
+y = df["DEATH_EVENT"]
+
+# Train-Test Split
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+# Decision Tree Model
+from sklearn.tree import DecisionTreeClassifier
+
+dt_model = DecisionTreeClassifier(random_state=42)
+
+dt_model.fit(X_train, y_train)
+
+# Prediction
+y_pred = dt_model.predict(X_test)
+
+# Evaluation
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
