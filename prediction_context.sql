@@ -1,0 +1,4 @@
+-- The current build does NOT require a separate prediction_inputs table.
+-- Prediction inputs are stored as JSON in predictions.input_data.
+-- The application automatically creates/verifies the required tables in
+-- heart_prediction_new_db through database_setup.py.

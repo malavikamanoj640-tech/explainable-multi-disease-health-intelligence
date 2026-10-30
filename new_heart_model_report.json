@@ -1,0 +1,138 @@
+{
+  "dataset": {
+    "rows": 918,
+    "features": [
+      "Age",
+      "Sex",
+      "ChestPainType",
+      "RestingBP",
+      "Cholesterol",
+      "FastingBS",
+      "RestingECG",
+      "MaxHR",
+      "ExerciseAngina",
+      "Oldpeak",
+      "ST_Slope"
+    ],
+    "target": "HeartDisease",
+    "class_distribution": {
+      "0": 410,
+      "1": 508
+    }
+  },
+  "individual_models": {
+    "Logistic Regression": {
+      "accuracy": 0.88587,
+      "precision": 0.87156,
+      "recall": 0.931373,
+      "f1": 0.900474,
+      "roc_auc": 0.929938,
+      "confusion_matrix": [
+        [
+          68,
+          14
+        ],
+        [
+          7,
+          95
+        ]
+      ]
+    },
+    "Random Forest": {
+      "accuracy": 0.902174,
+      "precision": 0.896226,
+      "recall": 0.931373,
+      "f1": 0.913462,
+      "roc_auc": 0.933584,
+      "confusion_matrix": [
+        [
+          71,
+          11
+        ],
+        [
+          7,
+          95
+        ]
+      ]
+    },
+    "Gradient Boosting": {
+      "accuracy": 0.891304,
+      "precision": 0.901961,
+      "recall": 0.901961,
+      "f1": 0.901961,
+      "roc_auc": 0.930536,
+      "confusion_matrix": [
+        [
+          72,
+          10
+        ],
+        [
+          10,
+          92
+        ]
+      ]
+    },
+    "SVM": {
+      "accuracy": 0.891304,
+      "precision": 0.894231,
+      "recall": 0.911765,
+      "f1": 0.902913,
+      "roc_auc": 0.948589,
+      "confusion_matrix": [
+        [
+          71,
+          11
+        ],
+        [
+          9,
+          93
+        ]
+      ]
+    }
+  },
+  "static_probability_average": {
+    "accuracy": 0.907609,
+    "precision": 0.897196,
+    "recall": 0.941176,
+    "f1": 0.91866,
+    "roc_auc": 0.94034,
+    "confusion_matrix": [
+      [
+        71,
+        11
+      ],
+      [
+        6,
+        96
+      ]
+    ]
+  },
+  "adaptive_ensemble": {
+    "accuracy": 0.902174,
+    "precision": 0.888889,
+    "recall": 0.941176,
+    "f1": 0.914286,
+    "roc_auc": 0.939742,
+    "confusion_matrix": [
+      [
+        70,
+        12
+      ],
+      [
+        6,
+        96
+      ]
+    ]
+  },
+  "validation_weights": {
+    "Logistic Regression": 0.248832,
+    "Random Forest": 0.252421,
+    "Gradient Boosting": 0.249242,
+    "SVM": 0.249506
+  },
+  "notes": [
+    "No follow-up-time feature is used.",
+    "Adaptive weights combine validation F1 reliability with per-sample model confidence.",
+    "Metrics are from one stratified 80/20 split and should not be presented as clinical performance."
+  ]
+}

@@ -1,0 +1,10 @@
+Flask
+Flask-MySQLdb
+Flask-Bcrypt
+pandas
+numpy
+scikit-learn
+joblib
+requests
+PyPDF2
+shap>=0.50.0

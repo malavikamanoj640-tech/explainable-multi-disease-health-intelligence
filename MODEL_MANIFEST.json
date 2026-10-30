@@ -1,0 +1,16 @@
+{
+  "heart_module": "Heart Disease",
+  "dataset": "dataset/heart.csv",
+  "rows": 918,
+  "input_features": 11,
+  "target": "HeartDisease",
+  "model_file": "models/heart/ensemble_model.pkl",
+  "model_class": "AdaptiveEnsemble",
+  "base_models": ["Logistic Regression", "Random Forest", "Gradient Boosting", "SVM"],
+  "uses_follow_up_time": false,
+  "xai": "SHAP KernelExplainer",
+  "database": "heart_prediction_new_db",
+  "legacy_database_preserved": "heart_prediction_db",
+  "database_auto_setup": true,
+  "model_version_recovery": true
+}

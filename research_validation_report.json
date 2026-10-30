@@ -1,0 +1,60 @@
+{
+  "dataset": {
+    "rows": 918,
+    "features": 11,
+    "target": "HeartDisease",
+    "class_distribution": {
+      "0": 410,
+      "1": 508
+    }
+  },
+  "five_fold_cv_roc_auc": {
+    "lr": {
+      "mean": 0.92515,
+      "std": 0.02121,
+      "folds": [
+        0.9456,
+        0.938307,
+        0.903037,
+        0.942888,
+        0.895919
+      ]
+    },
+    "rf": {
+      "mean": 0.926336,
+      "std": 0.025855,
+      "folds": [
+        0.948888,
+        0.939264,
+        0.885282,
+        0.951099,
+        0.907148
+      ]
+    },
+    "gb": {
+      "mean": 0.922164,
+      "std": 0.019909,
+      "folds": [
+        0.946915,
+        0.92133,
+        0.890005,
+        0.938541,
+        0.91403
+      ]
+    },
+    "svm": {
+      "mean": 0.926255,
+      "std": 0.016655,
+      "folds": [
+        0.948828,
+        0.924797,
+        0.903993,
+        0.940594,
+        0.913064
+      ]
+    }
+  },
+  "saved_model_class": "AdaptiveEnsemble",
+  "adaptive_weighting": true,
+  "time_feature_used": false
+}
